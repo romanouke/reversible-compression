@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE=http://localhost:8000/api
+      - VITE_WS_BASE=ws://localhost:8000/api/ws
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - FFMPEG_PATH=/usr/bin/ffmpeg
+      - FFPROBE_PATH=/usr/bin/ffprobe
+      - MAX_UPLOAD_MB=500
+      - JOB_TTL_HOURS=24
+      - MAX_CONCURRENT_JOBS=2
+      - DEFAULT_CRF=23
+      - DEFAULT_PRESET=medium
+      - DEFAULT_CODEC=libx264
+      - KEYFRAME_INTERVAL_SEC=2
+      - TARGET_FPS=30
+      - CORS_ORIGINS=http://localhost:5173
+      - RATE_LIMIT_UPLOAD=10
+      - RATE_LIMIT_STATUS=30
+      - DOWNLOAD_URL_TTL_HOURS=1
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+      - METRICS_PORT=9090
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2'
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    command: python -m app.services.worker
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - FFMPEG_PATH=/usr/bin/ffmpeg
+      - FFPROBE_PATH=/usr/bin/ffprobe
+      - DEFAULT_CRF=23
+      - DEFAULT_PRESET=medium
+      - DEFAULT_CODEC=libx264
+      - KEYFRAME_INTERVAL_SEC=2
+      - TARGET_FPS=30
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    deploy:
+      replicas: 2
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:

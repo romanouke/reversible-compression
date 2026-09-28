@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.local
+.env.*.local
+.venv/
+venv/
+env/
+
+# Build outputs
+frontend/dist/
+frontend/build/
+frontend/.vite/
+backend/*.egg-info/
+backend/dist/
+backend/build/
+
+# Storage (local data - not committed)
+storage/
+!storage/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Distribution
+*.tar.gz
+*.whl
+
+# Misc
+*.egg
+.eggs/
+MANIFEST
