@@ -1,12 +1,12 @@
 import { Routes, Route } from 'react-router-dom'
-import { Layout } from './components/layout/Layout'
-import { LandingPage } from './pages/LandingPage'
-import { CompressPage } from './pages/CompressPage'
-import { DecompressPage } from './pages/DecompressPage'
-import { HistoryPage } from './pages/HistoryPage'
-import { AboutPage } from './pages/AboutPage'
-import { DocsPage } from './pages/DocsPage'
-import { SettingsPage } from './pages/SettingsPage'
+import { Layout } from './components/layout/Layout.jsx'
+import { LandingPage } from './pages/LandingPage.jsx'
+import { CompressPage } from './pages/CompressPage.jsx'
+import { DecompressPage } from './pages/DecompressPage.jsx'
+import { HistoryPage } from './pages/HistoryPage.jsx'
+import { AboutPage } from './pages/AboutPage.jsx'
+import { DocsPage } from './pages/DocsPage.jsx'
+import { SettingsPage } from './pages/SettingsPage.jsx'
 
 function App() {
   return (

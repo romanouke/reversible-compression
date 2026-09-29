@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { Menu, X, Sun, Moon, Monitor, Globe } from 'lucide-react'
 import { useState } from 'react'
-import { useTheme } from '../../context/ThemeContext'
+import { useTheme } from '../../context/ThemeContext.jsx'
 
 const navigation = [
   { name: 'Compress', href: '/compress' },
