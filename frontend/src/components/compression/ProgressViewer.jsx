@@ -4,16 +4,20 @@ import { clsx } from 'clsx'
 import { ProgressBar } from '../ui/ProgressBar.jsx'
 
 const STAGES = [
+  { key: 'probe', label: 'Inspecting video', icon: Film },
   { key: 'split', label: 'Splitting into tubes', icon: Scissors },
   { key: 'shuffle', label: 'Shuffling tubes', icon: Shuffle },
+  { key: 'concat', label: 'Concatenating tubes', icon: Film },
   { key: 'encode', label: 'Encoding video', icon: Film },
   { key: 'mux', label: 'Muxing audio', icon: Mic },
   { key: 'verify', label: 'Verifying integrity', icon: CheckCircle2 },
 ]
 
 const STAGE_PROGRESS = {
+  probe: 5,
   split: 20,
   shuffle: 40,
+  concat: 65,
   encode: 80,
   mux: 95,
   verify: 100,

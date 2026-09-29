@@ -42,14 +42,32 @@ async function request(endpoint, options = {}) {
   return response.json()
 }
 
+// The API takes snake_case multipart fields. Mapping them explicitly (rather
+// than forwarding the config object as-is) keeps the two sides honest: a
+// renamed key fails here instead of being silently ignored by a server default.
+const COMPRESS_FIELDS = {
+  tubeDurationSec: 'tube_duration_sec',
+  shuffleSeed: 'shuffle_seed',
+  outputCodec: 'output_codec',
+  mode: 'mode',
+  preset: 'preset',
+  crf: 'crf',
+}
+
 export const api = {
   // Compression
   compress: (file, config) => {
     const formData = new FormData()
     formData.append('video', file)
-    Object.entries(config).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
+    for (const [key, value] of Object.entries(config)) {
+      const field = COMPRESS_FIELDS[key]
+      if (!field) {
+        throw new Error(`Unknown compress option: ${key}`)
+      }
+      if (value !== undefined && value !== null) {
+        formData.append(field, String(value))
+      }
+    }
     return request('/compress', { method: 'POST', body: formData })
   },
 

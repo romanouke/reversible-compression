@@ -8,9 +8,8 @@ const apiEndpoints = [
   { method: 'POST', path: '/api/compress', description: 'Upload video + config → returns job_id', auth: false },
   { method: 'POST', path: '/api/decompress', description: 'Upload compressed video + tube map → returns job_id', auth: false },
   { method: 'GET', path: '/api/status/{job_id}', description: 'Poll job progress (status, progress, stage, result)', auth: false },
-  { method: 'GET', path: '/api/ws/{job_id}', description: 'WebSocket for real-time progress updates', auth: false },
-  { method: 'GET', path: '/api/download/{job_id}/{file_type}', description: 'Download result files (compressed, map, restored, md5)', auth: false },
-  { method: 'GET', path: '/health', description: 'Health check (FFmpeg, storage, Redis, queue)', auth: false },
+  { method: 'GET', path: '/api/download/{job_id}/{file_type}', description: 'Download result files (compressed, map, restored, md5, original)', auth: false },
+  { method: 'GET', path: '/api/health', description: 'Health check (FFmpeg, ffprobe, storage, queue)', auth: false },
 ]
 
 const requestSchemas = {
@@ -18,10 +17,10 @@ const requestSchemas = {
   "video": "<multipart/file>",
   "tube_duration_sec": 1.0,
   "shuffle_seed": 42,
+  "mode": "stream",
   "output_codec": "libx264",
   "preset": "medium",
-  "crf": 23,
-  "target_fps": 30
+  "crf": 23
 }`,
   decompress: `{
   "compressed_video": "<multipart/file>",
@@ -36,21 +35,23 @@ const responseSchemas = {
 }`,
   status: `{
   "job_id": "uuid",
-  "status": "processing|completed|failed",
+  "status": "queued|processing|completed|failed",
   "progress": 65,
-  "stage": "encoding",
+  "stage": "split",
   "result": {
-    "compressed_video_url": "/api/download/job_id/compressed",
-    "tube_map_url": "/api/download/job_id/map",
-    "restored_video_url": "/api/download/job_id/restored",
-    "original_size": 104857600,
-    "compressed_size": 98765432,
-    "restored_size": 104857600,
-    "tube_count": 120,
-    "duration_sec": 120.5,
-    "md5_original": "...",
-    "md5_restored": "...",
-    "md5_match": true
+    "mode": "stream",
+    "lossless": true,
+    "compressedVideoUrl": "/api/download/job_id/compressed",
+    "tubeMapUrl": "/api/download/job_id/map",
+    "restoredVideoUrl": null,
+    "originalSize": 104857600,
+    "compressedSize": 98765432,
+    "tubeMapSize": 24576,
+    "restoredSize": null,
+    "tubeCount": 120,
+    "durationSec": 120.5,
+    "md5Original": "...",
+    "md5Match": null
   },
   "error": null
 }`,
@@ -59,15 +60,15 @@ const responseSchemas = {
 const faq = [
   {
     q: 'Is the compression actually lossless?',
-    a: 'Yes, the restoration process is mathematically lossless. The MD5 hash of the restored video will match the original exactly. The compression happens during the re-encode step (libx264 with configurable CRF), not from the reordering itself.'
+    a: 'Only stream mode is lossless: it copies the video and audio streams without re-encoding and verifies their content after restoration. Re-encode mode can reduce file size, but is lossy and cannot restore identical media.'
   },
   {
     q: 'What video formats are supported?',
-    a: 'Input: MP4, MOV, AVI, MKV (any format FFmpeg can decode). Output: MP4 (H.264/H.265/VP9). The tube map is always JSON.'
+    a: 'Input: MP4, MOV, AVI, MKV, M4V, or WebM. Output: MP4 using the selected video codec. The tube map is always JSON.'
   },
   {
     q: 'What is the maximum file size?',
-    a: 'Default limit is 500MB (configurable via MAX_UPLOAD_MB environment variable). Larger files may require more memory and processing time.'
+    a: 'Video uploads default to 500MB (REVCOMP_MAX_UPLOAD_MB); tube maps default to 10MB (REVCOMP_MAX_MAP_MB).'
   },
   {
     q: 'How long does compression take?',
@@ -75,7 +76,7 @@ const faq = [
   },
   {
     q: 'Can I use this without Docker?',
-    a: 'Yes, you can run the backend directly with Python (requires FFmpeg, Redis) and frontend with npm. Docker is recommended for consistency.'
+    a: 'Yes. Run the Node.js backend and React frontend with npm. FFmpeg and ffprobe are supplied by the backend packages; Docker Compose is also supported.'
   },
   {
     q: 'What happens if I lose the tube map?',
@@ -83,11 +84,11 @@ const faq = [
   },
   {
     q: 'Does it work with audio?',
-    a: 'Yes, audio is extracted before processing, preserved unchanged, and remuxed into the final output. Audio quality is not affected.'
+    a: 'Yes. Stream mode copies audio unchanged. Re-encode mode encodes audio to AAC, so it is lossy along with the video.'
   },
   {
     q: 'Can I run multiple jobs in parallel?',
-    a: 'Yes, configured via MAX_CONCURRENT_JOBS (default: CPU cores - 1). Each worker processes one job at a time.'
+    a: 'Yes, the in-process backend queue accepts multiple jobs and limits active work with REVCOMP_MAX_CONCURRENT_JOBS (default: 1).'
   },
 ]
 
@@ -284,10 +285,10 @@ export function DocsPage() {
               <li>Tube-based reversible compression with Fisher-Yates shuffle</li>
               <li>Keyframe-aware segmentation with FFmpeg</li>
               <li>libx264/libx265/VP9 encoding support</li>
-              <li>MD5 verification for lossless guarantee</li>
-              <li>React + FastAPI web interface</li>
+              <li>Content-hash verification for stream-copy restoration</li>
+              <li>React + Express web interface</li>
               <li>Docker Compose deployment</li>
-              <li>Real-time progress via WebSocket</li>
+              <li>Progress updates via status polling</li>
             </ul>
           </div>
         </div>

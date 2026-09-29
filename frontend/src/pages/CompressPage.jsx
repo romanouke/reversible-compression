@@ -10,15 +10,7 @@ import { Card, CardContent } from '../components/common/Card.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { api } from '../services/api.js'
 import { useToast } from '../components/ui/ToastContainer.jsx'
-
-const DEFAULT_CONFIG = {
-  tubeDurationSec: 1.0,
-  shuffleSeed: 42,
-  outputCodec: 'libx264',
-  preset: 'medium',
-  crf: 23,
-  targetFps: 30,
-}
+import { DEFAULT_CONFIG } from '../utils/constants.js'
 
 export function CompressPage() {
   const [file, setFile] = useState(null)
@@ -101,7 +93,7 @@ export function CompressPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Compress Video</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Upload a video, configure tube-based reordering settings, and compress with lossless restoration guarantee.
+          Upload a video and configure tube-based reordering. Stream copy preserves the original media packets; re-encoding can reduce size but is lossy.
         </p>
       </div>
 

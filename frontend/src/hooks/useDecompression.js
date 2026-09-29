@@ -50,10 +50,14 @@ export function useDecompression() {
       if (data.status === 'completed') {
         setResult(data.result)
         setMd5Match(data.result?.md5Match ?? null)
-        if (data.result?.md5Match) {
-          addToast({ title: 'Restoration complete', description: 'Lossless verified (MD5 match)', type: 'success' })
+        if (data.result?.md5Match === true) {
+          addToast({ title: 'Restoration complete', description: 'Original media content verified.', type: 'success' })
+        } else if (data.result?.lossless === false) {
+          addToast({ title: 'Restoration complete', description: 'The video was re-encoded, so an identical restoration is not possible.', type: 'warning' })
+        } else if (data.result?.md5Match === false) {
+          addToast({ title: 'Integrity check failed', description: 'Restored content does not match the original.', type: 'error' })
         } else {
-          addToast({ title: 'Restoration complete', description: 'MD5 mismatch detected!', type: 'error' })
+          addToast({ title: 'Restoration complete', description: 'Integrity could not be verified.', type: 'warning' })
         }
       } else if (data.status === 'failed') {
         setStatus('failed')

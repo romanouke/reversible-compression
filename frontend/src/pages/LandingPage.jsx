@@ -16,8 +16,8 @@ const features = [
   },
   {
     icon: Shield,
-    title: 'Lossless Guarantee',
-    description: 'MD5 verification ensures bit-for-bit identical restoration. Every round-trip is mathematically verified.',
+    title: 'Verified Stream Mode',
+    description: 'Stream mode checks preserved media content after restoration. Re-encode mode is lossy and does not claim an identical result.',
   },
   {
     icon: Key,
@@ -27,7 +27,7 @@ const features = [
   {
     icon: Code,
     title: 'Open Source',
-    description: 'Built with React, FastAPI, FFmpeg. Full algorithm transparency, self-hostable with Docker.',
+    description: 'Built with React, Node.js, TypeScript, and FFmpeg. The processing pipeline can be self-hosted with Docker.',
   },
   {
     icon: Download,
@@ -38,7 +38,7 @@ const features = [
 
 const steps = [
   { number: '01', title: 'Upload & Configure', description: 'Select video, set tube duration (default 1s), shuffle seed, and codec/CRF.' },
-  { number: '02', title: 'Compress', description: 'Video splits into keyframe-aligned tubes → shuffled → re-encoded with FFmpeg → compressed output + tube map.' },
+  { number: '02', title: 'Compress', description: 'Video splits at keyframes → shuffles → stream-copies or re-encodes by mode → output + tube map.' },
   { number: '03', title: 'Decompress', description: 'Upload compressed video + tube map → tubes restored to original order → concatenated → audio muxed → verified.' },
 ]
 
@@ -63,7 +63,7 @@ export function LandingPage() {
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Tube-based reordering with deterministic shuffling and actual codec compression.
-              Lossless restoration guaranteed via MD5 verification.
+              Choose stream copy for lossless restoration or re-encoding for smaller, lossy output.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/compress">
@@ -162,7 +162,7 @@ export function LandingPage() {
               <CardContent>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Backend</h3>
                 <div className="flex flex-wrap gap-2">
-                  {['FastAPI', 'FFmpeg', 'OpenCV', 'Redis/Arq', 'Pydantic', 'Uvicorn', 'Python 3.11+'].map((tech) => (
+                  {['Node.js 20+', 'Express', 'TypeScript', 'FFmpeg', 'ffprobe', 'In-process queue'].map((tech) => (
                     <span key={tech} className="badge badge-warning">{tech}</span>
                   ))}
                 </div>
@@ -197,7 +197,7 @@ export function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white">Ready to Try?</h2>
           <p className="mt-4 text-lg text-primary-100 max-w-2xl mx-auto">
-            Start compressing videos with reversible tube-based reordering. Open source, self-hosted, and mathematically verified.
+            Process video locally with reversible tube-based reordering. Stream mode is lossless; re-encode mode trades fidelity for size.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/compress">

@@ -24,11 +24,11 @@
       "compression": "Actual Compression",
       "compressionDesc": "Re-encode with modern codecs (H.264/HEVC) after reordering for real file size reduction.",
       "lossless": "Lossless Guarantee",
-      "losslessDesc": "MD5 verification ensures bit-for-bit identical restoration. Every round-trip is mathematically verified.",
+      "losslessDesc": "Stream mode verifies preserved media content after restoration. Re-encode mode is lossy and does not claim an identical result.",
       "deterministic": "Deterministic & Reproducible",
       "deterministicDesc": "Same seed = same shuffle. Share seed + tube map to allow anyone to restore.",
       "openSource": "Open Source",
-      "openSourceDesc": "Built with React, FastAPI, FFmpeg. Full algorithm transparency, self-hostable with Docker.",
+      "openSourceDesc": "Built with React, Node.js, TypeScript, and FFmpeg. Self-hostable with Docker.",
       "localFirst": "Local-First",
       "localFirstDesc": "No cloud upload required. All processing happens on your machine or local server."
     },
@@ -37,14 +37,14 @@
       "step1": "Upload & Configure",
       "step1Desc": "Select video, set tube duration (default 1s), shuffle seed, and codec/CRF.",
       "step2": "Compress",
-      "step2Desc": "Video splits into keyframe-aligned tubes → shuffled → re-encoded with FFmpeg → compressed output + tube map.",
+      "step2Desc": "Video splits into keyframe-aligned tubes → shuffled → copied or re-encoded according to mode → output + tube map.",
       "step3": "Decompress",
       "step3Desc": "Upload compressed video + tube map → tubes restored to original order → concatenated → audio muxed → verified."
     }
   },
   "compress": {
     "title": "Compress Video",
-    "subtitle": "Upload a video, configure tube-based reordering settings, and compress with lossless restoration guarantee.",
+    "subtitle": "Upload a video and choose stream copy for lossless restoration or re-encoding for smaller, lossy output.",
     "settings": "Compression Settings",
     "tubeDuration": "Tube Duration (seconds)",
     "shuffleSeed": "Shuffle Seed",
@@ -69,8 +69,8 @@
     "download": "Download",
     "compare": "Compare Side-by-Side",
     "newJob": "New Job",
-    "verified": "Lossless verified (MD5 match)",
-    "mismatch": "MD5 mismatch!"
+    "verified": "Stream content verified",
+    "mismatch": "Content hash mismatch"
   },
   "decompress": {
     "title": "Decompress Video",
@@ -78,7 +78,7 @@
     "requirements": "Requirements",
     "reqVideo": "Compressed video (.mp4)",
     "reqMap": "Tube map (.json) from compression",
-    "reqMatch": "Same tube duration & seed used",
+    "reqMatch": "Matching tube map from the compression job",
     "validPair": "Ready to decompress ✓ Valid pair",
     "startButton": "Start Decompression",
     "starting": "Starting...",
@@ -86,8 +86,8 @@
     "restored": "Restored successfully",
     "restoreFailed": "Restoration failed",
     "verified": "Integrity Verified",
-    "md5Match": "MD5 hash matches original file (lossless restoration)",
-    "md5Mismatch": "MD5 hash does not match original file",
+    "md5Match": "Original media content matches (stream-copy restoration)",
+    "md5Mismatch": "Restored media content does not match the original",
     "download": "Download",
     "newJob": "New Decompression"
   },
@@ -124,7 +124,7 @@
   },
   "about": {
     "title": "About Reversible Compression",
-    "description": "A tube-based video compression tool that uses deterministic reordering and modern codecs to achieve compression with mathematically guaranteed lossless restoration.",
+    "description": "A tube-based video tool with deterministic reordering. Stream mode preserves encoded media for lossless restoration; re-encode mode reduces size with quality loss.",
     "concept": "Core Concept",
     "pipeline": "Compression Pipeline",
     "techStack": "Technology Stack",

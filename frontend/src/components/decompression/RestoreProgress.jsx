@@ -1,8 +1,9 @@
-import { CheckCircle, AlertCircle, Loader2, Scissors, ArrowUpDown, Film, Mic, CheckCircle2 } from 'lucide-react'
+import { CheckCircle, AlertCircle, Loader2, Scissors, ArrowUpDown, Film, Mic, CheckCircle2, Info } from 'lucide-react'
 import { clsx } from 'clsx'
 import { ProgressBar } from '../ui/ProgressBar.jsx'
 
 const STAGES = [
+  { key: 'probe', label: 'Validating inputs', icon: Film },
   { key: 'split', label: 'Splitting compressed video', icon: Scissors },
   { key: 'restore', label: 'Restoring tube order', icon: ArrowUpDown },
   { key: 'concat', label: 'Concatenating tubes', icon: Film },
@@ -11,6 +12,7 @@ const STAGES = [
 ]
 
 const STAGE_PROGRESS = {
+  probe: 5,
   split: 20,
   restore: 40,
   concat: 70,
@@ -18,7 +20,7 @@ const STAGE_PROGRESS = {
   verify: 100,
 }
 
-export function RestoreProgress({ status, stage, progress, onCancel, md5Match }) {
+export function RestoreProgress({ status, stage, progress, onCancel, md5Match, lossless, warnings }) {
   const getStageIndex = (stageKey) => STAGES.findIndex((s) => s.key === stageKey)
   const currentStageIndex = stage ? getStageIndex(stage) : 0
 
@@ -112,27 +114,55 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match })
         })}
       </div>
 
-      {status === 'completed' && md5Match !== undefined && (
+      {status === 'completed' && (
         <div className={clsx('p-3 rounded-lg flex items-center gap-3',
-          md5Match ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800'
+          md5Match === true
+            ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800'
+            : md5Match === false && lossless
+              ? 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800'
+              : 'bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
         )}>
-          {md5Match ? (
+          {md5Match === true ? (
             <>
               <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
               <div>
                 <p className="font-medium text-green-700 dark:text-green-300">Integrity Verified</p>
-                <p className="text-sm text-green-600 dark:text-green-400">MD5 hash matches original file (lossless restoration)</p>
+                <p className="text-sm text-green-600 dark:text-green-400">Original media content matches (stream-copy restoration)</p>
               </div>
             </>
-          ) : (
+          ) : md5Match === false && lossless ? (
             <>
               <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
               <div>
                 <p className="font-medium text-red-700 dark:text-red-300">Integrity Check Failed</p>
-                <p className="text-sm text-red-600 dark:text-red-400">MD5 hash does not match original file</p>
+                <p className="text-sm text-red-600 dark:text-red-400">Content hash does not match the original media</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <Info className="h-6 w-6 text-amber-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-amber-800 dark:text-amber-200">
+                  {lossless ? 'Integrity could not be verified' : 'Restored from a lossy encode'}
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  {lossless
+                    ? 'The map does not contain a usable content hash.'
+                    : 'The content mismatch is expected; re-encoding prevents an identical restoration.'}
+                </p>
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {warnings?.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-amber-700 dark:text-amber-300">
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
         </div>
       )}
 

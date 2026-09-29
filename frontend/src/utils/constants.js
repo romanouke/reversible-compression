@@ -33,13 +33,20 @@ export const JOB_TYPES = {
 }
 
 export const DEFAULT_CONFIG = {
+  // stream keeps every packet untouched (lossless, size ~unchanged);
+  // reencode shrinks the file at the cost of exact restoration.
+  mode: 'stream',
   tubeDurationSec: 1.0,
   shuffleSeed: 42,
   outputCodec: 'libx264',
   preset: 'medium',
   crf: 23,
-  targetFps: 30,
 }
+
+export const MODE_OPTIONS = [
+  { value: 'stream', label: 'Stream copy (lossless, size unchanged)' },
+  { value: 'reencode', label: 'Re-encode (smaller file, not lossless)' },
+]
 
 export const CODEC_OPTIONS = [
   { value: 'libx264', label: 'H.264 (libx264)' },
@@ -78,8 +85,14 @@ export const LOG_LEVELS = [
   { value: 'ERROR', label: 'Error' },
 ]
 
-export const MAX_UPLOAD_SIZE = 500 * 1024 * 1024 // 500MB
-export const MAX_MAP_SIZE = 10 * 1024 * 1024 // 10MB
+function maxSizeBytes(envName, fallbackMb) {
+  const configuredMb = Number(import.meta.env[envName])
+  const sizeMb = Number.isFinite(configuredMb) && configuredMb > 0 ? configuredMb : fallbackMb
+  return sizeMb * 1024 * 1024
+}
+
+export const MAX_UPLOAD_SIZE = maxSizeBytes('VITE_MAX_UPLOAD_MB', 500)
+export const MAX_MAP_SIZE = maxSizeBytes('VITE_MAX_MAP_MB', 10)
 
 export const ACCEPTED_VIDEO_TYPES = [
   'video/mp4',

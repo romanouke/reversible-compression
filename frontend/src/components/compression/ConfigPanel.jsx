@@ -20,11 +20,36 @@ const PRESET_OPTIONS = [
   { value: 'veryslow', label: 'Veryslow (slowest, smallest file)' },
 ]
 
+const MODE_OPTIONS = [
+  { value: 'stream', label: 'Stream copy (lossless, size unchanged)' },
+  { value: 'reencode', label: 'Re-encode (smaller file, not lossless)' },
+]
+
 export function ConfigPanel({ config, onChange, className, disabled }) {
+  const isStream = config.mode !== 'reencode'
+
   return (
     <div className={clsx('space-y-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50', className)}>
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Compression Settings</h3>
-      
+
+      <ConfigSelect
+        label="Mode"
+        options={MODE_OPTIONS}
+        value={config.mode}
+        onChange={(e) => onChange('mode', e.target.value)}
+        disabled={disabled}
+      />
+      <p className={clsx(
+        '-mt-2 rounded-lg p-3 text-xs',
+        isStream
+          ? 'bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+          : 'bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200'
+      )}>
+        {isStream
+          ? 'Every video and audio packet is copied untouched, so the restored file is frame-identical to the original. Reordering alone cannot shrink a file, so expect a ratio near 1.0.'
+          : 'The shuffled video is re-encoded, which does shrink the file meaningfully. This is lossy, so the restored frames will not be identical and the lossless check is expected to report a mismatch.'}
+      </p>
+
       <ConfigInput
         label="Tube Duration (seconds)"
         type="number"
@@ -35,6 +60,7 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
         onChange={(e) => onChange('tubeDurationSec', parseFloat(e.target.value) || 1.0)}
         disabled={disabled}
         error={config.tubeDurationSec < 0.1 || config.tubeDurationSec > 60 ? 'Must be between 0.1 and 60' : undefined}
+        hint="Target only. Tubes are cut on keyframes, so actual lengths follow the source's GOP layout."
       />
 
       <ConfigInput
@@ -48,44 +74,37 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
         disabled={disabled}
       />
 
-      <ConfigSelect
-        label="Output Codec"
-        options={CODEC_OPTIONS}
-        value={config.outputCodec}
-        onChange={(e) => onChange('outputCodec', e.target.value)}
-        disabled={disabled}
-      />
+      {!isStream && (
+        <>
+          <ConfigSelect
+            label="Output Codec"
+            options={CODEC_OPTIONS}
+            value={config.outputCodec}
+            onChange={(e) => onChange('outputCodec', e.target.value)}
+            disabled={disabled}
+          />
 
-      <ConfigSelect
-        label="Encoding Preset"
-        options={PRESET_OPTIONS}
-        value={config.preset}
-        onChange={(e) => onChange('preset', e.target.value)}
-        disabled={disabled}
-      />
+          <ConfigSelect
+            label="Encoding Preset"
+            options={PRESET_OPTIONS}
+            value={config.preset}
+            onChange={(e) => onChange('preset', e.target.value)}
+            disabled={disabled}
+          />
 
-      <ConfigInput
-        label="CRF (Quality 0-51, lower = better)"
-        type="number"
-        min="0"
-        max="51"
-        step="1"
-        value={config.crf}
-        onChange={(e) => onChange('crf', parseInt(e.target.value) || 23)}
-        disabled={disabled}
-        error={config.crf < 0 || config.crf > 51 ? 'Must be between 0 and 51' : undefined}
-      />
-
-      <ConfigInput
-        label="Target FPS"
-        type="number"
-        min="1"
-        max="120"
-        step="1"
-        value={config.targetFps}
-        onChange={(e) => onChange('targetFps', parseInt(e.target.value) || 30)}
-        disabled={disabled}
-      />
+          <ConfigInput
+            label="CRF (Quality 0-51, lower = better)"
+            type="number"
+            min="0"
+            max="51"
+            step="1"
+            value={config.crf}
+            onChange={(e) => onChange('crf', parseInt(e.target.value) || 23)}
+            disabled={disabled}
+            error={config.crf < 0 || config.crf > 51 ? 'Must be between 0 and 51' : undefined}
+          />
+        </>
+      )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { formatFileSize } from './formatters.js'
+import { MAX_MAP_SIZE, MAX_UPLOAD_SIZE } from './constants.js'
 
 export const ACCEPTED_VIDEO_TYPES = [
   'video/mp4',
@@ -9,8 +10,7 @@ export const ACCEPTED_VIDEO_TYPES = [
 
 export const ACCEPTED_VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv']
 
-export const MAX_VIDEO_SIZE = 500 * 1024 * 1024 // 500MB
-export const MAX_MAP_SIZE = 10 * 1024 * 1024 // 10MB
+export const MAX_VIDEO_SIZE = MAX_UPLOAD_SIZE
 
 export function validateVideoFile(file) {
   if (!file) return 'No file provided'

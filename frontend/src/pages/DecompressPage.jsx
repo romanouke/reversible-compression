@@ -42,10 +42,14 @@ export function DecompressPage() {
       if (data.status === 'completed') {
         setResult(data.result)
         setMd5Match(data.result?.md5Match ?? null)
-        if (data.result?.md5Match) {
-          addToast({ title: 'Restoration complete', description: 'Lossless verified (MD5 match)', type: 'success' })
+        if (data.result?.md5Match === true) {
+          addToast({ title: 'Restoration complete', description: 'Original media content verified.', type: 'success' })
+        } else if (data.result?.lossless === false) {
+          addToast({ title: 'Restoration complete', description: 'The video was re-encoded, so an identical restoration is not possible.', type: 'warning' })
+        } else if (data.result?.md5Match === false) {
+          addToast({ title: 'Integrity check failed', description: 'Restored content does not match the original.', type: 'error' })
         } else {
-          addToast({ title: 'Restoration complete', description: 'MD5 mismatch detected!', type: 'error' })
+          addToast({ title: 'Restoration complete', description: 'The map does not contain a usable content hash, so integrity could not be verified.', type: 'warning' })
         }
       } else if (data.status === 'failed') {
         addToast({ title: 'Decompression failed', description: data.error || 'Unknown error', type: 'error' })
@@ -115,12 +119,12 @@ export function DecompressPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-green-500" />
-                  Same tube duration & seed used
+                  Matching tube map from the compression job
                 </li>
               </ul>
               <div className="mt-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  The tube map must match the compressed video exactly. Any mismatch will cause restoration to fail.
+                  The tube map carries the shuffle order and measured cut points; you do not need to re-enter the tube duration or shuffle seed.
                 </p>
               </div>
             </CardContent>
@@ -149,6 +153,8 @@ export function DecompressPage() {
                   progress={progress}
                   onCancel={() => { /* TODO: implement cancel */ }}
                   md5Match={md5Match}
+                  lossless={result?.lossless}
+                  warnings={result?.warnings}
                 />
               </CardContent>
             </Card>
@@ -163,9 +169,18 @@ export function DecompressPage() {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Restored Video</h3>
                     {md5Match !== null && (
                       <div className={clsx('flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium',
-                        md5Match ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                        md5Match
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+                          : result.lossless
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200'
                       )}>
-                        {md5Match ? '✓ Lossless Verified' : '✗ MD5 Mismatch'}
+                        {md5Match ? '✓ Content Verified' : result.lossless ? '✗ Content Mismatch' : 'Lossy encode (expected)'}
+                      </div>
+                    )}
+                    {md5Match === null && (
+                      <div className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                        {result.lossless ? 'Integrity not verified' : 'Restored from lossy encode'}
                       </div>
                     )}
                   </div>

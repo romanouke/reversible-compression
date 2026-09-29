@@ -5,9 +5,9 @@ import { clsx } from 'clsx'
 
 const techStack = [
   { category: 'Frontend', items: ['React 18', 'Vite', 'Tailwind CSS', 'React Router v6', 'TanStack Query', 'Framer Motion', 'Lucide React'], color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200' },
-  { category: 'Backend', items: ['FastAPI', 'FFmpeg', 'OpenCV', 'Redis/Arq', 'Pydantic', 'Uvicorn', 'Python 3.11+'], color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' },
-  { category: 'Infrastructure', items: ['Docker Compose', 'Nginx (prod)', 'Prometheus', 'Grafana', 'GitHub Actions'], color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200' },
-  { category: 'Algorithms', items: ['Fisher-Yates Shuffle', 'Keyframe-aware Segmentation', 'FFmpeg Segment/Concat', 'libx264/libx265', 'MD5 Verification'], color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200' },
+  { category: 'Backend', items: ['Node.js 20+', 'Express', 'TypeScript', 'FFmpeg', 'ffprobe', 'In-process queue'], color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' },
+  { category: 'Infrastructure', items: ['Docker Compose', 'Local filesystem storage'], color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200' },
+  { category: 'Algorithms', items: ['Fisher-Yates Shuffle', 'Keyframe-aware Segmentation', 'FFmpeg Segment/Concat', 'Stream-copy verification'], color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200' },
 ]
 
 const algorithmDetails = [
@@ -33,7 +33,7 @@ const algorithmDetails = [
   },
   {
     title: 'Lossless Restoration',
-    description: 'During decompression, tubes are reordered according to the tube map, concatenated, and audio is remuxed. MD5 hash verification ensures bit-for-bit identical restoration.',
+    description: 'Stream mode restores packet order and verifies media content. Re-encode mode is lossy and is never described as lossless.',
     icon: Shield,
   },
 ]
@@ -61,8 +61,7 @@ export function AboutPage() {
             <span className="text-primary-600 dark:text-primary-400">Compression</span>
           </h1>
           <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            A tube-based video compression tool that uses deterministic reordering and modern codecs
-            to achieve compression with mathematically guaranteed lossless restoration.
+            A tube-based video processing tool with deterministic reordering. Stream mode preserves encoded media for lossless restoration; re-encode mode reduces size with quality loss.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="#" className="btn btn-primary btn-lg" rightIcon={<Github className="h-4 w-4" />}>

@@ -1,4 +1,4 @@
-import { Download, FileVideo, FileJson, CheckCircle, XCircle, Copy, ExternalLink } from 'lucide-react'
+import { Download, FileVideo, FileJson, CheckCircle, XCircle, Info, ExternalLink } from 'lucide-react'
 import { clsx } from 'clsx'
 import { formatFileSize, formatDuration } from '../../utils/formatters.js'
 
@@ -36,21 +36,30 @@ export function ResultPanel({ result, onDownload, onCompare, onNewJob, className
     <div className={clsx('space-y-4', className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Results</h3>
-        {result.md5Match !== undefined && (
+        {result.md5Match === true && (
           <div className={clsx('flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium',
-            result.md5Match ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
           )}>
-            {result.md5Match ? (
-              <>
-                <CheckCircle className="h-4 w-4" />
-                Lossless verified (MD5 match)
-              </>
-            ) : (
-              <>
-                <XCircle className="h-4 w-4" />
-                MD5 mismatch!
-              </>
-            )}
+            <CheckCircle className="h-4 w-4" />
+            Stream content verified
+          </div>
+        )}
+        {result.md5Match === false && result.lossless && (
+          <div className="flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-800 dark:bg-red-900/30 dark:text-red-200">
+            <XCircle className="h-4 w-4" />
+            Content hash mismatch
+          </div>
+        )}
+        {result.md5Match === false && !result.lossless && (
+          <div className="flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+            <Info className="h-4 w-4" />
+            Lossy re-encode; content mismatch is expected
+          </div>
+        )}
+        {result.md5Match === null && (
+          <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+            <Info className="h-4 w-4" />
+            Verification runs after decompression
           </div>
         )}
       </div>
@@ -103,6 +112,17 @@ export function ResultPanel({ result, onDownload, onCompare, onNewJob, className
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatDuration(result.durationSec)}</p>
         </div>
       </div>
+
+      {result.warnings?.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Notes from the server</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-700 dark:text-amber-300">
+            {result.warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="flex items-center gap-4">
         <button onClick={onCompare} className="btn btn-secondary" disabled={!result.restoredVideoUrl}>

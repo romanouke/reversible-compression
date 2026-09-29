@@ -10,7 +10,6 @@ export function useCompression() {
     outputCodec: 'libx264',
     preset: 'medium',
     crf: 23,
-    targetFps: 30,
   })
   const [jobId, setJobId] = useState(null)
   const [status, setStatus] = useState('idle')
