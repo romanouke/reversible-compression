@@ -1,106 +1,62 @@
-version: '3.8'
+name: reversible-compression
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - VITE_API_BASE=http://localhost:8000/api
-      - VITE_WS_BASE=ws://localhost:8000/api/ws
-    depends_on:
-      - backend
-    networks:
-      - app-network
-
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+    environment:
+      REVCOMP_MAX_UPLOAD_MB: ${REVCOMP_MAX_UPLOAD_MB:-500}
+      REVCOMP_MAX_MAP_MB: ${REVCOMP_MAX_MAP_MB:-10}
+      REVCOMP_JOB_TTL_HOURS: 24
+      REVCOMP_MAX_CONCURRENT_JOBS: 1
+      REVCOMP_DEFAULT_MODE: stream
+      REVCOMP_DEFAULT_CODEC: libx264
+      REVCOMP_DEFAULT_PRESET: medium
+      REVCOMP_DEFAULT_CRF: 23
+      REVCOMP_TUBE_DURATION_SEC: 1.0
+      REVCOMP_CORS_ORIGINS: http://localhost:5173
+      REVCOMP_LOG_LEVEL: INFO
+      REVCOMP_LOG_FORMAT: json
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
       - ./storage:/app/storage
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - FFMPEG_PATH=/usr/bin/ffmpeg
-      - FFPROBE_PATH=/usr/bin/ffprobe
-      - MAX_UPLOAD_MB=500
-      - JOB_TTL_HOURS=24
-      - MAX_CONCURRENT_JOBS=2
-      - DEFAULT_CRF=23
-      - DEFAULT_PRESET=medium
-      - DEFAULT_CODEC=libx264
-      - KEYFRAME_INTERVAL_SEC=2
-      - TARGET_FPS=30
-      - CORS_ORIGINS=http://localhost:5173
-      - RATE_LIMIT_UPLOAD=10
-      - RATE_LIMIT_STATUS=30
-      - DOWNLOAD_URL_TTL_HOURS=1
-      - LOG_LEVEL=INFO
-      - LOG_FORMAT=json
-      - METRICS_PORT=9090
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - app-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks: [app]
     deploy:
       resources:
         limits:
           memory: 4G
-          cpus: '2'
+          cpus: "2"
+    restart: unless-stopped
 
-  worker:
+  frontend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.worker
-    command: python -m app.services.worker
-    volumes:
-      - ./backend:/app
-      - ./storage:/app/storage
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - FFMPEG_PATH=/usr/bin/ffmpeg
-      - FFPROBE_PATH=/usr/bin/ffprobe
-      - DEFAULT_CRF=23
-      - DEFAULT_PRESET=medium
-      - DEFAULT_CODEC=libx264
-      - KEYFRAME_INTERVAL_SEC=2
-      - TARGET_FPS=30
-      - LOG_LEVEL=INFO
-      - LOG_FORMAT=json
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - app-network
-    deploy:
-      replicas: 2
-
-  redis:
-    image: redis:7-alpine
+      context: ./frontend
     ports:
-      - "6379:6379"
+      - "5173:5173"
+    environment:
+      VITE_API_BASE: /api
+      VITE_WS_BASE: /api/ws
+      VITE_API_TARGET: http://backend:8000
+      VITE_MAX_UPLOAD_MB: ${REVCOMP_MAX_UPLOAD_MB:-500}
+      VITE_MAX_MAP_MB: ${REVCOMP_MAX_MAP_MB:-10}
     volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
+      - ./frontend:/app
+      - frontend_modules:/app/node_modules
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [app]
+    restart: unless-stopped
 
 networks:
-  app-network:
+  app:
     driver: bridge
 
 volumes:
-  redis_data:
+  frontend_modules:
