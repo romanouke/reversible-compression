@@ -2,47 +2,50 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Zap, Shield, Code, Download, Upload, Shuffle, Film, Key, Github, ExternalLink } from 'lucide-react'
 import { Button } from '../components/common/Button.jsx'
 import { Card, CardContent } from '../components/common/Card.jsx'
+import { useLanguage } from '../context/LanguageContext.jsx'
 
 const features = [
   {
     icon: Shuffle,
-    title: 'Tube-based Reordering',
-    description: 'Split video into configurable tubes, shuffle with deterministic Fisher-Yates algorithm, and restore losslessly.',
+    title: 'reordering',
+    description: 'reorderingDesc',
   },
   {
     icon: Film,
-    title: 'Actual Compression',
-    description: 'Re-encode with modern codecs (H.264/HEVC) after reordering for real file size reduction.',
+    title: 'compression',
+    description: 'compressionDesc',
   },
   {
     icon: Shield,
-    title: 'Verified Stream Mode',
-    description: 'Stream mode checks preserved media content after restoration. Re-encode mode is lossy and does not claim an identical result.',
+    title: 'lossless',
+    description: 'losslessDesc',
   },
   {
     icon: Key,
-    title: 'Deterministic & Reproducible',
-    description: 'Same seed = same shuffle. Share seed + tube map to allow anyone to restore.',
+    title: 'deterministic',
+    description: 'deterministicDesc',
   },
   {
     icon: Code,
-    title: 'Open Source',
-    description: 'Built with React, Node.js, TypeScript, and FFmpeg. The processing pipeline can be self-hosted with Docker.',
+    title: 'openSource',
+    description: 'openSourceDesc',
   },
   {
     icon: Download,
-    title: 'Local-First',
-    description: 'No cloud upload required. All processing happens on your machine or local server.',
+    title: 'localFirst',
+    description: 'localFirstDesc',
   },
 ]
 
 const steps = [
-  { number: '01', title: 'Upload & Configure', description: 'Select video, set tube duration (default 1s), shuffle seed, and codec/CRF.' },
-  { number: '02', title: 'Compress', description: 'Video splits at keyframes → shuffles → stream-copies or re-encodes by mode → output + tube map.' },
-  { number: '03', title: 'Decompress', description: 'Upload compressed video + tube map → tubes restored to original order → concatenated → audio muxed → verified.' },
+  { number: '01', title: 'step1', description: 'step1Desc' },
+  { number: '02', title: 'step2', description: 'step2Desc' },
+  { number: '03', title: 'step3', description: 'step3Desc' },
 ]
 
 export function LandingPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="space-y-20">
       {/* Hero */}
@@ -58,33 +61,31 @@ export function LandingPage() {
               <span className="text-4xl font-bold text-gray-900 dark:text-white">RevComp</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Reversible Video{' '}
-              <span className="text-primary-600 dark:text-primary-400">Compression</span>
+              {t('landing.hero.title')}
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Tube-based reordering with deterministic shuffling and actual codec compression.
-              Choose stream copy for lossless restoration or re-encoding for smaller, lossy output.
+              {t('landing.hero.subtitle')}
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/compress">
                 <Button size="lg" className="w-full sm:w-auto" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  Try Compression
+                  {t('landing.hero.cta')}
                 </Button>
               </Link>
               <Link to="/about">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  How It Works
+                  {t('landing.hero.learnMore')}
                 </Button>
               </Link>
             </div>
             <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <a href="#" className="flex items-center gap-2 hover:text-primary-600 dark:hover:text-primary-400">
                 <Github className="h-5 w-5" />
-                View on GitHub
+                {t('landing.githubLabel')}
               </a>
               <a href="#" className="flex items-center gap-2 hover:text-primary-600 dark:hover:text-primary-400">
                 <ExternalLink className="h-5 w-5" />
-                Documentation
+                {t('nav.docs')}
               </a>
             </div>
           </div>
@@ -95,9 +96,9 @@ export function LandingPage() {
       <section>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">How It Works</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">{t('landing.howItWorks.title')}</h2>
             <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Three simple steps to compress and restore your videos with mathematical guarantees.
+              {t('landing.howItWorks.intro')}
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
@@ -107,8 +108,8 @@ export function LandingPage() {
                   {step.number}
                 </div>
                 <CardContent className="relative">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{step.title}</h3>
-                  <p className="mt-2 text-gray-600 dark:text-gray-300">{step.description}</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t(`landing.howItWorks.${step.title}`)}</h3>
+                  <p className="mt-2 text-gray-600 dark:text-gray-300">{t(`landing.howItWorks.${step.description}`)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -120,9 +121,9 @@ export function LandingPage() {
       <section className="bg-gray-50 dark:bg-gray-900/50">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Key Features</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">{t('landing.keyFeatures')}</h2>
             <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Built for developers and researchers who need transparent, verifiable video compression.
+              {t('landing.keyFeaturesDesc')}
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -132,8 +133,8 @@ export function LandingPage() {
                   <div className="mb-4 rounded-lg bg-primary-100 p-3 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400 w-fit">
                     <feature.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{feature.title}</h3>
-                  <p className="mt-2 text-gray-600 dark:text-gray-300">{feature.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t(`landing.features.${feature.title}`)}</h3>
+                  <p className="mt-2 text-gray-600 dark:text-gray-300">{t(`landing.features.${feature.description}`)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -145,12 +146,12 @@ export function LandingPage() {
       <section>
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Tech Stack</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">{t('landing.techStack')}</h2>
           </div>
           <div className="grid gap-8 md:grid-cols-2">
             <Card>
               <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Frontend</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('about.frontend')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {['React 18', 'Vite', 'Tailwind CSS', 'React Router', 'TanStack Query', 'Framer Motion', 'Lucide React'].map((tech) => (
                     <span key={tech} className="badge badge-info">{tech}</span>
@@ -160,7 +161,7 @@ export function LandingPage() {
             </Card>
             <Card>
               <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Backend</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('about.backend')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {['Node.js 20+', 'Express', 'TypeScript', 'FFmpeg', 'ffprobe', 'In-process queue'].map((tech) => (
                     <span key={tech} className="badge badge-warning">{tech}</span>
@@ -170,7 +171,7 @@ export function LandingPage() {
             </Card>
             <Card>
               <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Infrastructure</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('about.infrastructure')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {['Docker Compose', 'Nginx (prod)', 'Prometheus', 'Grafana', 'GitHub Actions'].map((tech) => (
                     <span key={tech} className="badge">{tech}</span>
@@ -180,7 +181,7 @@ export function LandingPage() {
             </Card>
             <Card>
               <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Algorithms</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('about.algorithms')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {['Fisher-Yates Shuffle', 'Keyframe-aware Segmentation', 'FFmpeg Segment/Concat', 'libx264/libx265', 'MD5 Verification'].map((tech) => (
                     <span key={tech} className="badge badge-success">{tech}</span>
@@ -195,19 +196,19 @@ export function LandingPage() {
       {/* CTA */}
       <section className="bg-primary-600 dark:bg-primary-700">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">Ready to Try?</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">{t('landing.ready')}</h2>
           <p className="mt-4 text-lg text-primary-100 max-w-2xl mx-auto">
-            Process video locally with reversible tube-based reordering. Stream mode is lossless; re-encode mode trades fidelity for size.
+            {t('landing.readyDesc')}
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/compress">
               <Button size="lg" variant="secondary" className="w-full sm:w-auto" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                Start Compressing
+                {t('landing.startCompressing')}
               </Button>
             </Link>
             <Link to="/docs">
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
-                Read Documentation
+                {t('landing.readDocs')}
               </Button>
             </Link>
           </div>
