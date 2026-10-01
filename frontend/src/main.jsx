@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
+import { LanguageProvider } from './context/LanguageContext.jsx'
 import { ToastProvider } from './components/ui/ToastContainer.jsx'
 import './styles/globals.css'
 
@@ -22,9 +23,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ThemeProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>

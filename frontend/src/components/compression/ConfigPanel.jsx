@@ -1,5 +1,6 @@
 import { ConfigInput, ConfigSelect } from '../ui/ConfigSelect.jsx'
 import { clsx } from 'clsx'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const CODEC_OPTIONS = [
   { value: 'libx264', label: 'H.264 (libx264)' },
@@ -20,21 +21,21 @@ const PRESET_OPTIONS = [
   { value: 'veryslow', label: 'Veryslow (slowest, smallest file)' },
 ]
 
-const MODE_OPTIONS = [
-  { value: 'stream', label: 'Stream copy (lossless, size unchanged)' },
-  { value: 'reencode', label: 'Re-encode (smaller file, not lossless)' },
-]
-
 export function ConfigPanel({ config, onChange, className, disabled }) {
+  const { t } = useLanguage()
   const isStream = config.mode !== 'reencode'
+  const modeOptions = [
+    { value: 'stream', label: t('compress.streamMode') },
+    { value: 'reencode', label: t('compress.reencodeMode') },
+  ]
 
   return (
     <div className={clsx('space-y-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50', className)}>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Compression Settings</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('compress.settings')}</h3>
 
       <ConfigSelect
-        label="Mode"
-        options={MODE_OPTIONS}
+        label={t('compress.mode')}
+        options={modeOptions}
         value={config.mode}
         onChange={(e) => onChange('mode', e.target.value)}
         disabled={disabled}
@@ -46,12 +47,12 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
           : 'bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200'
       )}>
         {isStream
-          ? 'Every video and audio packet is copied untouched, so the restored file is frame-identical to the original. Reordering alone cannot shrink a file, so expect a ratio near 1.0.'
-          : 'The shuffled video is re-encoded, which does shrink the file meaningfully. This is lossy, so the restored frames will not be identical and the lossless check is expected to report a mismatch.'}
+          ? t('compress.streamModeDesc')
+          : t('compress.reencodeModeDesc')}
       </p>
 
       <ConfigInput
-        label="Tube Duration (seconds)"
+        label={t('compress.tubeDuration')}
         type="number"
         min="0.1"
         max="60"
@@ -59,12 +60,12 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
         value={config.tubeDurationSec}
         onChange={(e) => onChange('tubeDurationSec', parseFloat(e.target.value) || 1.0)}
         disabled={disabled}
-        error={config.tubeDurationSec < 0.1 || config.tubeDurationSec > 60 ? 'Must be between 0.1 and 60' : undefined}
-        hint="Target only. Tubes are cut on keyframes, so actual lengths follow the source's GOP layout."
+        error={config.tubeDurationSec < 0.1 || config.tubeDurationSec > 60 ? t('compress.durationRangeError') : undefined}
+        hint={t('compress.tubeDurationHint')}
       />
 
       <ConfigInput
-        label="Shuffle Seed"
+        label={t('compress.shuffleSeed')}
         type="number"
         min="0"
         max="2147483647"
@@ -77,7 +78,7 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
       {!isStream && (
         <>
           <ConfigSelect
-            label="Output Codec"
+            label={t('compress.outputCodec')}
             options={CODEC_OPTIONS}
             value={config.outputCodec}
             onChange={(e) => onChange('outputCodec', e.target.value)}
@@ -85,7 +86,7 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
           />
 
           <ConfigSelect
-            label="Encoding Preset"
+            label={t('compress.encodingPreset')}
             options={PRESET_OPTIONS}
             value={config.preset}
             onChange={(e) => onChange('preset', e.target.value)}
@@ -93,7 +94,7 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
           />
 
           <ConfigInput
-            label="CRF (Quality 0-51, lower = better)"
+            label={t('compress.crf')}
             type="number"
             min="0"
             max="51"
@@ -101,7 +102,7 @@ export function ConfigPanel({ config, onChange, className, disabled }) {
             value={config.crf}
             onChange={(e) => onChange('crf', parseInt(e.target.value) || 23)}
             disabled={disabled}
-            error={config.crf < 0 || config.crf > 51 ? 'Must be between 0 and 51' : undefined}
+            error={config.crf < 0 || config.crf > 51 ? t('compress.crfRangeError') : undefined}
           />
         </>
       )}

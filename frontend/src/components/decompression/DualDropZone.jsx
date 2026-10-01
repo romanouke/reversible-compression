@@ -2,12 +2,14 @@ import { useState, useCallback, useRef } from 'react'
 import { Upload, FileVideo, FileJson, X, CheckCircle, AlertCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import { formatFileSize } from '../../utils/formatters.js'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
 const JSON_TYPES = ['application/json']
 const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
 
 export function DualDropZone({ onFilesSelect, className, disabled }) {
+  const { t } = useLanguage()
   const [videoFile, setVideoFile] = useState(null)
   const [mapFile, setMapFile] = useState(null)
   const [videoError, setVideoError] = useState(null)
@@ -18,23 +20,23 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
 
   const validateVideo = useCallback((f) => {
     if (!VIDEO_TYPES.includes(f.type)) {
-      return 'Unsupported video format. Please upload MP4, MOV, AVI, or MKV.'
+      return t('decompress.unsupportedVideoFormat')
     }
     if (f.size > MAX_FILE_SIZE) {
-      return `Video too large. Maximum size is ${formatFileSize(MAX_FILE_SIZE)}.`
+      return t('decompress.videoTooLarge', { size: formatFileSize(MAX_FILE_SIZE) })
     }
     return null
-  }, [])
+  }, [t])
 
   const validateMap = useCallback((f) => {
     if (!JSON_TYPES.includes(f.type) && !f.name.endsWith('.json')) {
-      return 'Please upload a JSON file.'
+      return t('decompress.jsonRequired')
     }
     if (f.size > 10 * 1024 * 1024) { // 10MB for map
-      return 'Map file too large.'
+      return t('decompress.mapTooLarge')
     }
     return null
-  }, [])
+  }, [t])
 
   const crossValidate = useCallback(() => {
     if (videoFile && mapFile) {
@@ -43,15 +45,15 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
         if (map.tube_count && map.duration_sec) {
           setValidation({ valid: true, tubeCount: map.tube_count, duration: map.duration_sec })
         } else {
-          setValidation({ valid: false, error: 'Invalid tube map format' })
+          setValidation({ valid: false, error: t('decompress.invalidMapFormat') })
         }
       } catch {
-        setValidation({ valid: false, error: 'Invalid JSON in tube map' })
+        setValidation({ valid: false, error: t('decompress.invalidMapJson') })
       }
     } else {
       setValidation(null)
     }
-  }, [videoFile, mapFile])
+  }, [videoFile, mapFile, t])
 
   const handleVideoFile = useCallback((f) => {
     const err = validateVideo(f)
@@ -138,7 +140,7 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
           <button
             onClick={onRemove}
             className="rounded-full bg-red-500/90 p-1.5 text-white hover:bg-red-600"
-            aria-label={`Remove ${label}`}
+            aria-label={`${t('common.removeFile')} ${label}`}
           >
             <X className="h-4 w-4" />
           </button>
@@ -149,7 +151,7 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
             <Icon className="h-8 w-8" />
           </div>
           <p className="text-lg font-medium text-gray-900 dark:text-gray-100">{label}</p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Drag & drop or click to browse</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('decompress.dropOrBrowse')}</p>
         </div>
       )}
       {error && (
@@ -163,7 +165,7 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
   return (
     <div className={clsx('space-y-4', className)}>
       <DropZone
-        label="Compressed Video"
+        label={t('decompress.reqVideo')}
         icon={FileVideo}
         file={videoFile}
         error={videoError}
@@ -173,7 +175,7 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
         accept={VIDEO_TYPES.join(',')}
       />
       <DropZone
-        label="Tube Map (JSON)"
+        label={t('decompress.reqMap')}
         icon={FileJson}
         file={mapFile}
         error={mapError}
@@ -190,9 +192,9 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
               <>
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <div>
-                  <p className="font-medium text-green-700 dark:text-green-300">Tube map validated</p>
+                  <p className="font-medium text-green-700 dark:text-green-300">{t('decompress.mapValidated')}</p>
                   <p className="text-sm text-green-600 dark:text-green-400">
-                    Tubes: {validation.tubeCount} • Duration: {validation.duration}s
+                    {t('decompress.tubeCountValue', { count: validation.tubeCount })} · {t('decompress.durationValue', { duration: validation.duration })}
                   </p>
                 </div>
               </>
@@ -208,8 +210,8 @@ export function DualDropZone({ onFilesSelect, className, disabled }) {
 
       {(videoFile || mapFile) && !videoError && !mapError && validation?.valid !== false && (
         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <span>Ready to decompress</span>
-          {validation?.valid && <span className="text-green-500">✓ Valid pair</span>}
+          <span>{t('decompress.ready')}</span>
+          {validation?.valid && <span className="text-green-500">✓ {t('decompress.validPair')}</span>}
         </div>
       )}
     </div>

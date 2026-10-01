@@ -8,8 +8,10 @@ import { Card, CardContent } from '../components/common/Card.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { api } from '../services/api.js'
 import { useToast } from '../components/ui/ToastContainer.jsx'
+import { useLanguage } from '../context/LanguageContext.jsx'
 
 export function DecompressPage() {
+  const { t } = useLanguage()
   const [files, setFiles] = useState({ video: null, map: null })
   const [jobId, setJobId] = useState(null)
   const [status, setStatus] = useState('idle')
@@ -28,7 +30,7 @@ export function DecompressPage() {
     },
     onError: (error) => {
       setStatus('failed')
-      addToast({ title: 'Decompression failed', description: error.message, type: 'error' })
+      addToast({ title: t('notifications.decompressionFailed'), description: error.message, type: 'error' })
     },
   })
 
@@ -43,16 +45,16 @@ export function DecompressPage() {
         setResult(data.result)
         setMd5Match(data.result?.md5Match ?? null)
         if (data.result?.md5Match === true) {
-          addToast({ title: 'Restoration complete', description: 'Original media content verified.', type: 'success' })
+          addToast({ title: t('notifications.decompressionComplete'), description: t('decompress.md5Match'), type: 'success' })
         } else if (data.result?.lossless === false) {
-          addToast({ title: 'Restoration complete', description: 'The video was re-encoded, so an identical restoration is not possible.', type: 'warning' })
+          addToast({ title: t('notifications.decompressionComplete'), description: t('decompress.lossyNote'), type: 'warning' })
         } else if (data.result?.md5Match === false) {
-          addToast({ title: 'Integrity check failed', description: 'Restored content does not match the original.', type: 'error' })
+          addToast({ title: t('decompress.integrityFailed'), description: t('decompress.md5Mismatch'), type: 'error' })
         } else {
-          addToast({ title: 'Restoration complete', description: 'The map does not contain a usable content hash, so integrity could not be verified.', type: 'warning' })
+          addToast({ title: t('notifications.decompressionComplete'), description: t('decompress.hashMissing'), type: 'warning' })
         }
       } else if (data.status === 'failed') {
-        addToast({ title: 'Decompression failed', description: data.error || 'Unknown error', type: 'error' })
+        addToast({ title: t('notifications.decompressionFailed'), description: data.error || t('common.error'), type: 'error' })
       } else {
         setTimeout(() => pollStatus(id), 1000)
       }
@@ -60,11 +62,11 @@ export function DecompressPage() {
       console.error('Polling error:', error)
       setTimeout(() => pollStatus(id), 2000)
     }
-  }, [])
+  }, [t])
 
   const handleStart = () => {
     if (!files.video || !files.map) {
-      addToast({ title: 'Missing files', description: 'Please provide both compressed video and tube map', type: 'warning' })
+      addToast({ title: t('notifications.missingFiles'), description: t('decompress.missingFilesDescription'), type: 'warning' })
       return
     }
     decompressMutation.mutate(files)
@@ -96,9 +98,9 @@ export function DecompressPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Decompress Video</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('decompress.title')}</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Upload a compressed video and its tube map to restore the original video with integrity verification.
+          {t('decompress.subtitle')}
         </p>
       </div>
 
@@ -107,19 +109,19 @@ export function DecompressPage() {
         <div className="lg:col-span-1">
           <Card className="sticky top-24">
             <CardContent>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Requirements</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('decompress.requirements')}</h3>
               <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                 <li className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-green-500" />
-                  Compressed video (.mp4)
+                  {t('decompress.reqVideo')}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-green-500" />
-                  Tube map (.json) from compression
+                  {t('decompress.reqMap')}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-green-500" />
-                  Matching tube map from the compression job
+                  {t('decompress.reqMatch')}
                 </li>
               </ul>
               <div className="mt-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -166,7 +168,7 @@ export function DecompressPage() {
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Restored Video</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('compress.restoredVideo')}</h3>
                     {md5Match !== null && (
                       <div className={clsx('flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium',
                         md5Match
@@ -175,12 +177,12 @@ export function DecompressPage() {
                             ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
                             : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200'
                       )}>
-                        {md5Match ? '✓ Content Verified' : result.lossless ? '✗ Content Mismatch' : 'Lossy encode (expected)'}
+                        {md5Match ? `✓ ${t('compress.verified')}` : result.lossless ? `✗ ${t('compress.mismatch')}` : t('decompress.lossyRestoration')}
                       </div>
                     )}
                     {md5Match === null && (
                       <div className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                        {result.lossless ? 'Integrity not verified' : 'Restored from lossy encode'}
+                        {result.lossless ? t('decompress.integrityUnknown') : t('decompress.lossyRestoration')}
                       </div>
                     )}
                   </div>
@@ -194,17 +196,17 @@ export function DecompressPage() {
                           </svg>
                         </span>
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">Restored Video</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{result.restoredSize ? `${(result.restoredSize / 1024 / 1024).toFixed(1)} MB` : 'Ready'}</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{t('compress.restoredVideo')}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{result.restoredSize ? `${(result.restoredSize / 1024 / 1024).toFixed(1)} MB` : t('common.ready')}</p>
                         </div>
                       </div>
                       <Button onClick={handleDownload} rightIcon={<ArrowRight className="h-4 w-4" />}>
-                        Download
+                        {t('common.download')}
                       </Button>
                     </div>
                   </div>
                   <Button variant="outline" onClick={handleNewJob} className="w-full">
-                    New Decompression
+                    {t('decompress.newJob')}
                   </Button>
                 </div>
               </CardContent>
@@ -221,7 +223,7 @@ export function DecompressPage() {
                 className="w-full max-w-md"
                 rightIcon={decompressMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               >
-                {decompressMutation.isPending ? 'Starting...' : 'Start Decompression'}
+                {decompressMutation.isPending ? t('decompress.starting') : t('decompress.startButton')}
               </Button>
             </div>
           )}

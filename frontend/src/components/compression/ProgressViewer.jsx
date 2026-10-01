@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react'
 import { Loader2, CheckCircle, AlertCircle, Clock, Scissors, Shuffle, Film, Mic, CheckCircle2 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { ProgressBar } from '../ui/ProgressBar.jsx'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const STAGES = [
-  { key: 'probe', label: 'Inspecting video', icon: Film },
-  { key: 'split', label: 'Splitting into tubes', icon: Scissors },
-  { key: 'shuffle', label: 'Shuffling tubes', icon: Shuffle },
-  { key: 'concat', label: 'Concatenating tubes', icon: Film },
-  { key: 'encode', label: 'Encoding video', icon: Film },
-  { key: 'mux', label: 'Muxing audio', icon: Mic },
-  { key: 'verify', label: 'Verifying integrity', icon: CheckCircle2 },
+  { key: 'probe', label: 'stageProbe', icon: Film },
+  { key: 'split', label: 'stageSplit', icon: Scissors },
+  { key: 'shuffle', label: 'stageShuffle', icon: Shuffle },
+  { key: 'concat', label: 'stageConcat', icon: Film },
+  { key: 'encode', label: 'stageEncode', icon: Film },
+  { key: 'mux', label: 'stageMux', icon: Mic },
+  { key: 'verify', label: 'stageVerify', icon: CheckCircle2 },
 ]
 
 const STAGE_PROGRESS = {
@@ -24,6 +25,7 @@ const STAGE_PROGRESS = {
 }
 
 export function ProgressViewer({ jobId, status, stage, progress, onCancel }) {
+  const { t } = useLanguage()
   const [currentStageIndex, setCurrentStageIndex] = useState(0)
 
   useEffect(() => {
@@ -45,11 +47,11 @@ export function ProgressViewer({ jobId, status, stage, progress, onCancel }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Processing</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('compress.processing')}</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {status === 'processing' ? `Stage: ${STAGES[currentStageIndex]?.label || 'Processing...'}` : 
-             status === 'completed' ? 'Completed successfully' : 
-             status === 'failed' ? 'Processing failed' : 'Queued'}
+            {status === 'processing' ? t('compress.stageLabel', { stage: t(`compress.${STAGES[currentStageIndex]?.label || 'processing'}`) }) :
+             status === 'completed' ? t('compress.completed') :
+             status === 'failed' ? t('compress.failed') : t('compress.queued')}
           </p>
         </div>
         {status === 'processing' && (
@@ -57,7 +59,7 @@ export function ProgressViewer({ jobId, status, stage, progress, onCancel }) {
             onClick={onCancel}
             className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
       </div>
@@ -68,7 +70,7 @@ export function ProgressViewer({ jobId, status, stage, progress, onCancel }) {
         variant={status === 'failed' ? 'error' : status === 'completed' ? 'success' : 'default'}
       />
 
-      <div className="space-y-3" role="list" aria-label="Processing stages">
+      <div className="space-y-3" role="list" aria-label={t('compress.processingStages')}>
         {STAGES.map((stageInfo, index) => {
           const stageStatus = getStageStatus(index)
           const Icon = stageInfo.icon
@@ -106,12 +108,12 @@ export function ProgressViewer({ jobId, status, stage, progress, onCancel }) {
                   stageStatus === 'failed' && index === currentStageIndex && 'text-red-700 dark:text-red-300',
                   stageStatus === 'pending' && 'text-gray-500 dark:text-gray-400'
                 )}>
-                  {stageInfo.label}
+                  {t(`compress.${stageInfo.label}`)}
                 </p>
                 {stageStatus === 'current' && (
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>In progress...</span>
+                    <span>{t('compress.inProgress')}</span>
                   </div>
                 )}
               </div>
@@ -126,7 +128,7 @@ export function ProgressViewer({ jobId, status, stage, progress, onCancel }) {
       {status === 'failed' && (
         <div className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <p className="text-sm text-red-700 dark:text-red-300">
-            Processing failed. Please try again or contact support.
+            {t('compress.failedMessage')}
           </p>
         </div>
       )}

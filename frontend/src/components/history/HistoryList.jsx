@@ -3,11 +3,7 @@ import { Download, Trash2, Eye, Filter, Calendar, ChevronDown, ChevronUp } from 
 import { clsx } from 'clsx'
 import { formatFileSize, formatDate } from '../../utils/formatters.js'
 import { HistoryItem } from './HistoryItem.jsx'
-
-const TYPE_LABELS = {
-  compress: 'Compress',
-  decompress: 'Decompress',
-}
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const TYPE_COLORS = {
   compress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
@@ -15,6 +11,7 @@ const TYPE_COLORS = {
 }
 
 export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
+  const { t } = useLanguage()
   const [filterType, setFilterType] = useState('all')
   const [dateRange, setDateRange] = useState({ from: null, to: null })
   const [sortDesc, setSortDesc] = useState(true)
@@ -49,7 +46,7 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
     const headers = ['Job ID', 'Type', 'Status', 'Created', 'Original Size', 'Output Size', 'Ratio', 'Duration', 'Tube Count']
     const rows = filteredJobs.map((job) => [
       job.jobId,
-      TYPE_LABELS[job.type] || job.type,
+      t(`history.type${job.type === 'compress' ? 'Compress' : 'Decompress'}`),
       job.status,
       formatDate(job.createdAt),
       formatFileSize(job.originalSize || 0),
@@ -72,8 +69,8 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
     return (
       <div className={clsx('card p-12 text-center', className)}>
         <Filter className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600" />
-        <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">No history yet</h3>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">Your compression and decompression jobs will appear here</p>
+        <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">{t('history.empty')}</h3>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">{t('history.emptyDesc')}</p>
       </div>
     )
   }
@@ -87,31 +84,31 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
             onChange={(e) => setFilterType(e.target.value)}
             className="input w-auto"
           >
-            <option value="all">All Types</option>
-            <option value="compress">Compress</option>
-            <option value="decompress">Decompress</option>
+            <option value="all">{t('history.allTypes')}</option>
+            <option value="compress">{t('history.typeCompress')}</option>
+            <option value="decompress">{t('history.typeDecompress')}</option>
           </select>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={clsx('btn btn-sm btn-outline', showFilters && 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300')}
           >
             <Filter className="h-4 w-4 mr-1" />
-            Filters
+            {t('history.filter')}
           </button>
           <button onClick={() => setSortDesc(!sortDesc)} className="btn btn-sm btn-ghost">
             {sortDesc ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
           </button>
           <div className="flex gap-2">
             <button onClick={handleExport} className="btn btn-sm btn-outline">
-              Export JSON
+              {t('history.exportJson')}
             </button>
             <button onClick={handleExportCSV} className="btn btn-sm btn-outline">
-              Export CSV
+              {t('history.exportCsv')}
             </button>
           </div>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {filteredJobs.length} of {jobs.length} jobs
+          {t('history.filteredJobs', { filtered: filteredJobs.length, total: jobs.length })}
         </p>
       </div>
 
@@ -119,7 +116,7 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
         <div className="card p-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="label">From Date</label>
+              <label className="label">{t('history.fromDate')}</label>
               <input
                 type="date"
                 value={dateRange.from || ''}
@@ -128,7 +125,7 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
               />
             </div>
             <div>
-              <label className="label">To Date</label>
+              <label className="label">{t('history.toDate')}</label>
               <input
                 type="date"
                 value={dateRange.to || ''}
@@ -138,7 +135,7 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
             </div>
             <div className="flex items-end">
               <button onClick={() => setDateRange({ from: null, to: null })} className="btn btn-sm btn-outline w-full">
-                Clear Filters
+                {t('history.clearFilters')}
               </button>
             </div>
           </div>
@@ -150,7 +147,7 @@ export function HistoryList({ jobs, onDownload, onDelete, onView, className }) {
           <HistoryItem
             key={job.jobId}
             job={job}
-            typeLabel={TYPE_LABELS[job.type] || job.type}
+            typeLabel={t(`history.type${job.type === 'compress' ? 'Compress' : 'Decompress'}`)}
             typeColor={TYPE_COLORS[job.type] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}
             onDownload={onDownload}
             onDelete={onDelete}

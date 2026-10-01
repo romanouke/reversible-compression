@@ -3,13 +3,14 @@ import { ChevronDown, ChevronRight, Copy, ExternalLink, FileCode, Terminal, Help
 import { Card, CardContent } from '../components/common/Card.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { clsx } from 'clsx'
+import { useLanguage } from '../context/LanguageContext.jsx'
 
 const apiEndpoints = [
-  { method: 'POST', path: '/api/compress', description: 'Upload video + config → returns job_id', auth: false },
-  { method: 'POST', path: '/api/decompress', description: 'Upload compressed video + tube map → returns job_id', auth: false },
-  { method: 'GET', path: '/api/status/{job_id}', description: 'Poll job progress (status, progress, stage, result)', auth: false },
-  { method: 'GET', path: '/api/download/{job_id}/{file_type}', description: 'Download result files (compressed, map, restored, md5, original)', auth: false },
-  { method: 'GET', path: '/api/health', description: 'Health check (FFmpeg, ffprobe, storage, queue)', auth: false },
+  { method: 'POST', path: '/api/compress', description: 'apiCompress', auth: false },
+  { method: 'POST', path: '/api/decompress', description: 'apiDecompress', auth: false },
+  { method: 'GET', path: '/api/status/{job_id}', description: 'apiStatus', auth: false },
+  { method: 'GET', path: '/api/download/{job_id}/{file_type}', description: 'apiDownload', auth: false },
+  { method: 'GET', path: '/api/health', description: 'apiHealth', auth: false },
 ]
 
 const requestSchemas = {
@@ -59,36 +60,36 @@ const responseSchemas = {
 
 const faq = [
   {
-    q: 'Is the compression actually lossless?',
-    a: 'Only stream mode is lossless: it copies the video and audio streams without re-encoding and verifies their content after restoration. Re-encode mode can reduce file size, but is lossy and cannot restore identical media.'
+    q: 'faqLossless',
+    a: 'faqLosslessAnswer'
   },
   {
-    q: 'What video formats are supported?',
-    a: 'Input: MP4, MOV, AVI, MKV, M4V, or WebM. Output: MP4 using the selected video codec. The tube map is always JSON.'
+    q: 'faqFormats',
+    a: 'faqFormatsAnswer'
   },
   {
-    q: 'What is the maximum file size?',
-    a: 'Video uploads default to 500MB (REVCOMP_MAX_UPLOAD_MB); tube maps default to 10MB (REVCOMP_MAX_MAP_MB).'
+    q: 'faqMaxSize',
+    a: 'faqMaxSizeAnswer'
   },
   {
-    q: 'How long does compression take?',
-    a: 'Depends on video length, resolution, and hardware. Typical speed is 0.5-2x realtime on modern CPUs. A 2-minute 1080p video takes ~30-60 seconds.'
+    q: 'faqDuration',
+    a: 'faqDurationAnswer'
   },
   {
-    q: 'Can I use this without Docker?',
-    a: 'Yes. Run the Node.js backend and React frontend with npm. FFmpeg and ffprobe are supplied by the backend packages; Docker Compose is also supported.'
+    q: 'faqDocker',
+    a: 'faqDockerAnswer'
   },
   {
-    q: 'What happens if I lose the tube map?',
-    a: 'The tube map is essential for restoration. Without it, the shuffled video cannot be restored to original order. Always keep the tube map JSON with your compressed video.'
+    q: 'faqMap',
+    a: 'faqMapAnswer'
   },
   {
-    q: 'Does it work with audio?',
-    a: 'Yes. Stream mode copies audio unchanged. Re-encode mode encodes audio to AAC, so it is lossy along with the video.'
+    q: 'faqAudio',
+    a: 'faqAudioAnswer'
   },
   {
-    q: 'Can I run multiple jobs in parallel?',
-    a: 'Yes, the in-process backend queue accepts multiple jobs and limits active work with REVCOMP_MAX_CONCURRENT_JOBS (default: 1).'
+    q: 'faqParallel',
+    a: 'faqParallelAnswer'
   },
 ]
 
@@ -157,6 +158,7 @@ python -m app.cli decompress compressed.mp4 tube_map.json \\
 python -m app.cli verify original.mp4 restored.mp4`
 
 export function DocsPage() {
+  const { t } = useLanguage()
   const [openSections, setOpenSections] = useState(new Set(['api', 'schemas', 'faq']))
 
   const toggleSection = (section) => {
@@ -192,22 +194,22 @@ export function DocsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Documentation</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('docs.title')}</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Complete API reference, algorithm specifications, and usage guides.
+          {t('docs.subtitle')}
         </p>
       </div>
 
       {/* API Reference */}
-      <Section id="api" title="API Reference" icon={<FileCode className="h-5 w-5" />}>
+      <Section id="api" title={t('docs.apiReference')} icon={<FileCode className="h-5 w-5" />}>
         <div className="space-y-4">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left p-3 font-medium text-gray-500 dark:text-gray-400">Method</th>
-                  <th className="text-left p-3 font-medium text-gray-500 dark:text-gray-400">Endpoint</th>
-                  <th className="text-left p-3 font-medium text-gray-500 dark:text-gray-400">Description</th>
+                  <th className="text-left p-3 font-medium text-gray-500 dark:text-gray-400">{t('docs.method')}</th>
+                  <th className="text-left p-3 font-medium text-gray-500 dark:text-gray-400">{t('docs.endpoint')}</th>
+                  <th className="text-left p-3 font-medium text-gray-500 dark:text-gray-400">{t('docs.description')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -215,60 +217,60 @@ export function DocsPage() {
                   <tr key={i} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="p-3"><code className={clsx('px-2 py-1 rounded text-xs font-mono', ep.method === 'POST' && 'bg-green-100 text-green-800', ep.method === 'GET' && 'bg-blue-100 text-blue-800', 'dark:bg-gray-800')}>{ep.method}</code></td>
                     <td className="p-3 font-mono text-sm">{ep.path}</td>
-                    <td className="p-3 text-gray-600 dark:text-gray-300">{ep.description}</td>
+                    <td className="p-3 text-gray-600 dark:text-gray-300">{t(`docs.${ep.description}`)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">Compress Request</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">{t('docs.compressRequest')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{requestSchemas.compress}</code></pre>
 
-          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">Decompress Request</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">{t('docs.decompressRequest')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{requestSchemas.decompress}</code></pre>
 
-          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">Job Created Response</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">{t('docs.jobCreatedResponse')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{responseSchemas.jobCreated}</code></pre>
 
-          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">Status Response</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white mt-6 mb-3">{t('docs.statusResponse')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{responseSchemas.status}</code></pre>
         </div>
       </Section>
 
       {/* Algorithm Spec */}
-      <Section id="algorithms" title="Algorithm Specification" icon={<Terminal className="h-5 w-5" />}>
+      <Section id="algorithms" title={t('docs.algorithms')} icon={<Terminal className="h-5 w-5" />}>
         <div className="space-y-6">
-          <h4 className="font-semibold text-gray-900 dark:text-white">Tube Format</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white">{t('docs.tubeFormat')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{tubeFormatSample}</code></pre>
 
-          <h4 className="font-semibold text-gray-900 dark:text-white">Tube Map Schema</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white">{t('docs.tubeMapSchema')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{tubeMapSchemaSample}</code></pre>
 
-          <h4 className="font-semibold text-gray-900 dark:text-white">Shuffle Algorithm (Fisher-Yates)</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white">{t('docs.shuffleAlgorithm')}</h4>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{shuffleAlgorithmSample}</code></pre>
         </div>
       </Section>
 
       {/* CLI Usage */}
-      <Section id="cli" title="CLI Usage" icon={<Terminal className="h-5 w-5" />}>
+      <Section id="cli" title={t('docs.cli')} icon={<Terminal className="h-5 w-5" />}>
         <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-300">Command-line interface for batch processing and automation.</p>
+          <p className="text-gray-600 dark:text-gray-300">{t('docs.cliDescription')}</p>
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto text-sm"><code>{cliUsage}</code></pre>
         </div>
       </Section>
 
       {/* FAQ */}
-      <Section id="faq" title="Frequently Asked Questions" icon={<HelpCircle className="h-5 w-5" />}>
+      <Section id="faq" title={t('docs.faq')} icon={<HelpCircle className="h-5 w-5" />}>
         <div className="space-y-4">
           {faq.map((item, i) => (
             <details key={i} className="group border border-gray-200 dark:border-gray-700 rounded-lg">
               <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
-                <span className="font-medium text-gray-900 dark:text-white">{item.q}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{t(`docs.${item.q}`)}</span>
                 <ChevronDown className="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180" />
               </summary>
               <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
-                {item.a}
+                {t(`docs.${item.a}`)}
               </div>
             </details>
           ))}
@@ -276,19 +278,19 @@ export function DocsPage() {
       </Section>
 
       {/* Changelog */}
-      <Section id="changelog" title="Changelog" icon={<Clock className="h-5 w-5" />}>
+      <Section id="changelog" title={t('docs.changelog')} icon={<Clock className="h-5 w-5" />}>
         <div className="space-y-4">
           <div className="border-l-2 border-primary-500 pl-4">
             <h4 className="font-semibold text-gray-900 dark:text-white">v1.0.0 (2026-09-28)</h4>
             <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300 list-disc list-inside">
-              <li>Initial release</li>
-              <li>Tube-based reversible compression with Fisher-Yates shuffle</li>
-              <li>Keyframe-aware segmentation with FFmpeg</li>
-              <li>libx264/libx265/VP9 encoding support</li>
-              <li>Content-hash verification for stream-copy restoration</li>
-              <li>React + Express web interface</li>
-              <li>Docker Compose deployment</li>
-              <li>Progress updates via status polling</li>
+              <li>{t('docs.changeInitial')}</li>
+              <li>{t('docs.changeShuffle')}</li>
+              <li>{t('docs.changeKeyframes')}</li>
+              <li>{t('docs.changeCodecs')}</li>
+              <li>{t('docs.changeVerification')}</li>
+              <li>{t('docs.changeWeb')}</li>
+              <li>{t('docs.changeDocker')}</li>
+              <li>{t('docs.changeProgress')}</li>
             </ul>
           </div>
         </div>

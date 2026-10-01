@@ -2,20 +2,22 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { Menu, X, Sun, Moon, Monitor, Globe } from 'lucide-react'
 import { useState } from 'react'
 import { useTheme } from '../../context/ThemeContext.jsx'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const navigation = [
-  { name: 'Compress', href: '/compress' },
-  { name: 'Decompress', href: '/decompress' },
-  { name: 'History', href: '/history' },
-  { name: 'About', href: '/about' },
-  { name: 'Docs', href: '/docs' },
-  { name: 'Settings', href: '/settings' },
+  { name: 'compress', href: '/compress' },
+  { name: 'decompress', href: '/decompress' },
+  { name: 'history', href: '/history' },
+  { name: 'about', href: '/about' },
+  { name: 'docs', href: '/docs' },
+  { name: 'settings', href: '/settings' },
 ]
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
   const { theme, toggleTheme, resolvedTheme } = useTheme()
+  const { language, setLanguage, t } = useLanguage()
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
@@ -43,7 +45,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {item.name}
+                {t(`nav.${item.name}`)}
               </NavLink>
             ))}
           </div>
@@ -61,8 +63,9 @@ export function Navbar() {
           <div className="hidden sm:flex sm:items-center sm:gap-2">
             <select
               className="input py-1.5 text-xs"
-              defaultValue="en"
-              aria-label="Language"
+              value={language}
+              onChange={(event) => setLanguage(event.target.value)}
+              aria-label={t('settings.language')}
             >
               <option value="en">EN</option>
               <option value="id">ID</option>
@@ -83,6 +86,18 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
           <div className="px-4 py-3 space-y-2">
+            <label className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+              <span>{t('settings.language')}</span>
+              <select
+                className="input w-auto py-1.5 text-xs"
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                aria-label={t('settings.language')}
+              >
+                <option value="en">EN</option>
+                <option value="id">ID</option>
+              </select>
+            </label>
             {navigation.map((item) => (
               <NavLink
                 key={item.name}
@@ -96,7 +111,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {item.name}
+                {t(`nav.${item.name}`)}
               </NavLink>
             ))}
           </div>

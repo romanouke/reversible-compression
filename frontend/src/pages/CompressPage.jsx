@@ -11,8 +11,10 @@ import { Button } from '../components/common/Button.jsx'
 import { api } from '../services/api.js'
 import { useToast } from '../components/ui/ToastContainer.jsx'
 import { DEFAULT_CONFIG } from '../utils/constants.js'
+import { useLanguage } from '../context/LanguageContext.jsx'
 
 export function CompressPage() {
+  const { t } = useLanguage()
   const [file, setFile] = useState(null)
   const [config, setConfig] = useState(DEFAULT_CONFIG)
   const [jobId, setJobId] = useState(null)
@@ -33,7 +35,7 @@ export function CompressPage() {
     },
     onError: (error) => {
       setStatus('failed')
-      addToast({ title: 'Compression failed', description: error.message, type: 'error' })
+      addToast({ title: t('notifications.compressionFailed'), description: error.message, type: 'error' })
     },
   })
 
@@ -46,9 +48,9 @@ export function CompressPage() {
 
       if (data.status === 'completed') {
         setResult(data.result)
-        addToast({ title: 'Compression complete', description: 'Video compressed successfully', type: 'success' })
+        addToast({ title: t('notifications.compressionComplete'), type: 'success' })
       } else if (data.status === 'failed') {
-        addToast({ title: 'Compression failed', description: data.error || 'Unknown error', type: 'error' })
+        addToast({ title: t('notifications.compressionFailed'), description: data.error || t('common.error'), type: 'error' })
       } else {
         setTimeout(() => pollStatus(id), 1000)
       }
@@ -56,11 +58,11 @@ export function CompressPage() {
       console.error('Polling error:', error)
       setTimeout(() => pollStatus(id), 2000)
     }
-  }, [])
+  }, [t])
 
   const handleStart = () => {
     if (!file) {
-      addToast({ title: 'No file', description: 'Please select a video file first', type: 'warning' })
+      addToast({ title: t('notifications.noFile'), description: t('compress.selectVideoFirst'), type: 'warning' })
       return
     }
     compressMutation.mutate({ file, config })
@@ -91,9 +93,9 @@ export function CompressPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Compress Video</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('compress.title')}</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Upload a video and configure tube-based reordering. Stream copy preserves the original media packets; re-encoding can reduce size but is lossy.
+          {t('compress.subtitle')}
         </p>
       </div>
 
@@ -158,7 +160,7 @@ export function CompressPage() {
                 className="w-full max-w-md"
                 rightIcon={compressMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               >
-                {compressMutation.isPending ? 'Starting...' : 'Start Compression'}
+                {compressMutation.isPending ? t('compress.starting') : t('compress.startButton')}
               </Button>
             </div>
           )}

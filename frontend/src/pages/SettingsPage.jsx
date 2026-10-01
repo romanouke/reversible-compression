@@ -5,6 +5,7 @@ import { Button } from '../components/common/Button.jsx'
 import { ConfigInput, ConfigSelect } from '../components/ui/ConfigSelect.jsx'
 import { ThemeToggle } from '../components/ui/ThemeToggle.jsx'
 import { useToast } from '../components/ui/ToastContainer.jsx'
+import { useLanguage } from '../context/LanguageContext.jsx'
 import { clsx } from 'clsx'
 
 const CODEC_OPTIONS = [
@@ -48,6 +49,7 @@ const DEFAULT_SETTINGS = {
 }
 
 export function SettingsPage() {
+  const { language, setLanguage, t } = useLanguage()
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [saving, setSaving] = useState(false)
   const [storageInfo, setStorageInfo] = useState({ used: 0, total: 0, tempCount: 0 })
@@ -62,7 +64,7 @@ export function SettingsPage() {
     const saved = localStorage.getItem('revcomp-settings')
     if (saved) {
       try {
-        setSettings(JSON.parse(saved))
+        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved), language })
       } catch (e) {
         console.error('Failed to parse settings:', e)
       }
@@ -85,41 +87,41 @@ export function SettingsPage() {
       localStorage.setItem('revcomp-settings', JSON.stringify(settings))
       // In real app, also save to backend via API
       await new Promise(r => setTimeout(r, 500))
-      addToast({ title: 'Settings saved', type: 'success' })
+      addToast({ title: t('notifications.settingsSaved'), type: 'success' })
     } catch (error) {
-      addToast({ title: 'Save failed', description: error.message, type: 'error' })
+      addToast({ title: t('common.error'), description: error.message, type: 'error' })
     } finally {
       setSaving(false)
     }
   }
 
   const handleReset = () => {
-    if (confirm('Reset all settings to defaults?')) {
+    if (confirm(t('settings.confirmReset'))) {
       setSettings(DEFAULT_SETTINGS)
       localStorage.removeItem('revcomp-settings')
-      addToast({ title: 'Settings reset', type: 'success' })
+      addToast({ title: t('notifications.settingsReset'), type: 'success' })
     }
   }
 
   const handleClearHistory = async () => {
-    if (confirm('Delete all history from IndexedDB? This cannot be undone.')) {
+    if (confirm(t('settings.confirmClearHistory'))) {
       try {
         // In real app, call API
-        addToast({ title: 'History cleared', type: 'success' })
+        addToast({ title: t('notifications.historyCleared'), type: 'success' })
       } catch (error) {
-        addToast({ title: 'Failed to clear history', description: error.message, type: 'error' })
+        addToast({ title: t('common.error'), description: error.message, type: 'error' })
       }
     }
   }
 
   const handleClearTemp = async () => {
-    if (confirm('Delete all temporary files? This may affect running jobs.')) {
+    if (confirm(t('settings.confirmClearTemp'))) {
       try {
         // In real app, call API
         loadStorageInfo()
-        addToast({ title: 'Temp files cleared', type: 'success' })
+        addToast({ title: t('common.success'), type: 'success' })
       } catch (error) {
-        addToast({ title: 'Failed to clear temp', description: error.message, type: 'error' })
+        addToast({ title: t('common.error'), description: error.message, type: 'error' })
       }
     }
   }
@@ -144,9 +146,9 @@ export function SettingsPage() {
         const imported = JSON.parse(evt.target.result)
         setSettings(prev => ({ ...prev, ...imported }))
         localStorage.setItem('revcomp-settings', JSON.stringify({ ...settings, ...imported }))
-        addToast({ title: 'Settings imported', type: 'success' })
+        addToast({ title: t('notifications.settingsImported'), type: 'success' })
       } catch (err) {
-        addToast({ title: 'Import failed', description: 'Invalid JSON file', type: 'error' })
+        addToast({ title: t('common.error'), description: t('settings.invalidJson'), type: 'error' })
       }
     }
     reader.readAsText(file)
@@ -165,20 +167,20 @@ export function SettingsPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('settings.title')}</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Configure default compression settings, appearance, and storage management.
+            {t('settings.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportSettings} leftIcon={<Download className="h-4 w-4" />}>
-            Export Settings
+            {t('settings.exportSettings')}
           </Button>
           <Button variant="outline" onClick={handleReset} leftIcon={<Trash2 className="h-4 w-4" />}>
-            Reset to Defaults
+            {t('settings.resetDefaults')}
           </Button>
           <Button onClick={handleSave} disabled={saving} leftIcon={<Save className="h-4 w-4" />}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('settings.saving') : t('settings.saveChanges')}
           </Button>
         </div>
       </div>
@@ -188,13 +190,13 @@ export function SettingsPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Default Compression Settings</CardTitle>
-              <CardDescription>These values are used as defaults when creating new compression jobs.</CardDescription>
+              <CardTitle>{t('settings.defaults')}</CardTitle>
+              <CardDescription>{t('settings.defaultsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <ConfigInput
-                  label="Tube Duration (seconds)"
+                  label={t('compress.tubeDuration')}
                   type="number"
                   min="0.1"
                   max="60"
@@ -203,7 +205,7 @@ export function SettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, tubeDurationSec: parseFloat(e.target.value) || 1.0 }))}
                 />
                 <ConfigInput
-                  label="Shuffle Seed"
+                  label={t('compress.shuffleSeed')}
                   type="number"
                   min="0"
                   max="2147483647"
@@ -212,19 +214,19 @@ export function SettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, shuffleSeed: parseInt(e.target.value) || 42 }))}
                 />
                 <ConfigSelect
-                  label="Output Codec"
+                  label={t('compress.outputCodec')}
                   options={CODEC_OPTIONS}
                   value={settings.outputCodec}
                   onChange={(e) => setSettings(prev => ({ ...prev, outputCodec: e.target.value }))}
                 />
                 <ConfigSelect
-                  label="Encoding Preset"
+                  label={t('compress.encodingPreset')}
                   options={PRESET_OPTIONS}
                   value={settings.preset}
                   onChange={(e) => setSettings(prev => ({ ...prev, preset: e.target.value }))}
                 />
                 <ConfigInput
-                  label="CRF (Quality 0-51, lower = better)"
+                  label={t('compress.crf')}
                   type="number"
                   min="0"
                   max="51"
@@ -233,7 +235,7 @@ export function SettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, crf: parseInt(e.target.value) || 23 }))}
                 />
                 <ConfigInput
-                  label="Target FPS"
+                  label={t('compress.targetFps')}
                   type="number"
                   min="1"
                   max="120"
@@ -247,25 +249,25 @@ export function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Advanced Backend Settings</CardTitle>
-              <CardDescription>These settings require backend restart to take effect.</CardDescription>
+              <CardTitle>{t('settings.advanced')}</CardTitle>
+              <CardDescription>{t('settings.advancedDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <ConfigInput
-                  label="FFmpeg Path"
+                  label={t('settings.ffmpegPath')}
                   type="text"
                   value={settings.ffmpegPath}
                   onChange={(e) => setSettings(prev => ({ ...prev, ffmpegPath: e.target.value }))}
                 />
                 <ConfigInput
-                  label="FFprobe Path"
+                  label={t('settings.ffprobePath')}
                   type="text"
                   value={settings.ffprobePath}
                   onChange={(e) => setSettings(prev => ({ ...prev, ffprobePath: e.target.value }))}
                 />
                 <ConfigInput
-                  label="Max Concurrent Jobs"
+                  label={t('settings.maxConcurrentJobs')}
                   type="number"
                   min="1"
                   max="16"
@@ -285,7 +287,7 @@ export function SettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, logLevel: e.target.value }))}
                 />
                 <ConfigInput
-                  label="Job TTL (hours)"
+                  label={t('settings.jobTtlHours')}
                   type="number"
                   min="1"
                   max="168"
@@ -305,13 +307,13 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Appearance
+                {t('settings.appearance')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ThemeToggle />
               <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                Theme preference is saved locally and synced across sessions.
+                {t('settings.themeDesc')}
               </p>
             </CardContent>
           </Card>
@@ -321,18 +323,21 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="h-5 w-5" />
-                Language
+                {t('settings.language')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ConfigSelect
-                label="Interface Language"
+                label={t('settings.language')}
                 options={LANGUAGE_OPTIONS}
-                value={settings.language}
-                onChange={(e) => setSettings(prev => ({ ...prev, language: e.target.value }))}
+                value={language}
+                onChange={(e) => {
+                  setLanguage(e.target.value)
+                  setSettings(prev => ({ ...prev, language: e.target.value }))
+                }}
               />
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                More languages coming soon. <a href="#" className="text-primary-600 hover:underline">Contribute translations</a>.
+                {t('settings.languageDesc')}
               </p>
             </CardContent>
           </Card>
@@ -342,29 +347,29 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <HardDrive className="h-5 w-5" />
-                Storage Management
+                {t('settings.storage')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Used Space</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t('settings.usedSpace')}</span>
                   <span className="font-medium">{formatBytes(storageInfo.used)} / {formatBytes(storageInfo.total)}</span>
                 </div>
                 <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div className="h-full bg-primary-600 rounded-full transition-all" style={{ width: `${(storageInfo.used / storageInfo.total) * 100}%` }} />
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Temp Jobs</span>
-                  <span className="font-medium">{storageInfo.tempCount} active</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t('settings.tempJobs')}</span>
+                  <span className="font-medium">{t('settings.activeJobs', { count: storageInfo.tempCount })}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 <Button variant="outline" onClick={handleClearHistory} leftIcon={<Trash2 className="h-4 w-4" />} className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20">
-                  Clear History
+                  {t('settings.clearHistory')}
                 </Button>
                 <Button variant="outline" onClick={handleClearTemp} leftIcon={<Trash2 className="h-4 w-4" />} className="text-orange-600 hover:text-orange-700 border-orange-200 hover:bg-orange-50 dark:border-orange-800 dark:hover:bg-orange-900/20">
-                  Clear Temp Files
+                  {t('settings.clearTemp')}
                 </Button>
               </div>
             </CardContent>
@@ -375,20 +380,20 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Backup & Restore
+                {t('settings.backup')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Export your settings to a JSON file for backup or sharing. Import to restore on another machine.
+                {t('settings.backupDesc')}
               </p>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleExportSettings} leftIcon={<Download className="h-4 w-4" />}>
-                  Export Settings
+                  {t('settings.exportSettings')}
                 </Button>
                 <label className="btn btn-outline cursor-pointer">
                   <Upload className="h-4 w-4 mr-2" />
-                  Import Settings
+                  {t('settings.importSettings')}
                   <input type="file" accept=".json" onChange={handleImportSettings} className="hidden" />
                 </label>
               </div>

@@ -3,11 +3,13 @@ import { Upload, FileVideo, X, CheckCircle, Loader2 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { VideoPlayer } from '../ui/VideoPlayer.jsx'
 import { formatFileSize } from '../../utils/formatters.js'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const ACCEPTED_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
 const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
 
 export function VideoDropZone({ onFileSelect, acceptedTypes = ACCEPTED_TYPES, maxSize = MAX_FILE_SIZE, className, disabled }) {
+  const { t } = useLanguage()
   const [dragActive, setDragActive] = useState(false)
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
@@ -16,13 +18,13 @@ export function VideoDropZone({ onFileSelect, acceptedTypes = ACCEPTED_TYPES, ma
 
   const validateFile = useCallback((f) => {
     if (!acceptedTypes.includes(f.type)) {
-      return 'Unsupported file type. Please upload MP4, MOV, AVI, or MKV.'
+      return t('compress.unsupportedFile')
     }
     if (f.size > maxSize) {
-      return `File too large. Maximum size is ${formatFileSize(maxSize)}.`
+      return t('compress.fileTooLarge', { size: formatFileSize(maxSize) })
     }
     return null
-  }, [acceptedTypes, maxSize])
+  }, [acceptedTypes, maxSize, t])
 
   const handleFile = useCallback((f) => {
     const err = validateFile(f)
@@ -92,7 +94,7 @@ export function VideoDropZone({ onFileSelect, acceptedTypes = ACCEPTED_TYPES, ma
           <button
             onClick={removeFile}
             className="rounded-full bg-red-500/90 p-1.5 text-white hover:bg-red-600"
-            aria-label="Remove file"
+            aria-label={t('common.removeFile')}
           >
             <X className="h-4 w-4" />
           </button>
@@ -129,7 +131,7 @@ export function VideoDropZone({ onFileSelect, acceptedTypes = ACCEPTED_TYPES, ma
       onClick={handleClick}
       role="button"
       tabIndex={0}
-      aria-label="Drop zone for video file"
+          aria-label={t('compress.dropZone')}
     >
       <input
         ref={fileInputRef}
@@ -145,13 +147,13 @@ export function VideoDropZone({ onFileSelect, acceptedTypes = ACCEPTED_TYPES, ma
           <Upload className="h-8 w-8" />
         </div>
         <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
-          {dragActive ? 'Drop video here' : 'Drag & drop video here'}
+          {dragActive ? t('compress.dropHere') : t('compress.dragDrop')}
         </p>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          or click to browse
+          {t('compress.browse')}
         </p>
         <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-          MP4, MOV, AVI, MKV • Max {formatFileSize(maxSize)}
+          {t('compress.formats')} · {t('compress.maxSize', { size: formatFileSize(maxSize) })}
         </p>
       </div>
       {error && (

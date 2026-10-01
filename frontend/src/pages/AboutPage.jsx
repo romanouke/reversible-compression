@@ -2,6 +2,7 @@ import { Github, ExternalLink, Shield, Zap, Code, Key, Film, Shuffle, ArrowRight
 import { Button } from '../components/common/Button.jsx'
 import { Card, CardContent } from '../components/common/Card.jsx'
 import { clsx } from 'clsx'
+import { useLanguage } from '../context/LanguageContext.jsx'
 
 const techStack = [
   { category: 'Frontend', items: ['React 18', 'Vite', 'Tailwind CSS', 'React Router v6', 'TanStack Query', 'Framer Motion', 'Lucide React'], color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200' },
@@ -12,28 +13,28 @@ const techStack = [
 
 const algorithmDetails = [
   {
-    title: 'Tube Segmentation',
-    description: 'Video is split into fixed-duration tubes (default 1 second) using FFmpeg\'s segment muxer. Splitting occurs at keyframe boundaries to ensure each tube is independently decodable.',
+    title: 'tubeSegmentation',
+    description: 'tubeSegmentationDesc',
     icon: Film,
   },
   {
-    title: 'Deterministic Shuffling',
-    description: 'Tubes are shuffled using the Fisher-Yates algorithm with a fixed seed. The same seed always produces the same shuffle order, enabling reproducibility and shared restoration.',
+    title: 'deterministicShuffling',
+    description: 'deterministicShufflingDesc',
     icon: Shuffle,
   },
   {
-    title: 'ID Mapping',
-    description: 'Each tube receives a unique sequential ID. A JSON tube map records the original index, shuffled index, and tube ID for each segment. This map is required for restoration.',
+    title: 'idMapping',
+    description: 'idMappingDesc',
     icon: Key,
   },
   {
-    title: 'Re-encoding Compression',
-    description: 'After shuffling, tubes are concatenated and re-encoded with libx264 (or libx265/VP9). This is where actual compression occurs - reordering alone does not reduce file size.',
+    title: 'reencodingCompression',
+    description: 'reencodingCompressionDesc',
     icon: Zap,
   },
   {
-    title: 'Lossless Restoration',
-    description: 'Stream mode restores packet order and verifies media content. Re-encode mode is lossy and is never described as lossless.',
+    title: 'losslessRestoration',
+    description: 'losslessRestorationDesc',
     icon: Shield,
   },
 ]
@@ -43,6 +44,8 @@ const team = [
 ]
 
 export function AboutPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-20">
       {/* Hero */}
@@ -57,18 +60,17 @@ export function AboutPage() {
             <span className="text-5xl font-bold text-gray-900 dark:text-white">RevComp</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
-            About Reversible{' '}
-            <span className="text-primary-600 dark:text-primary-400">Compression</span>
+            {t('about.title')}
           </h1>
           <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            A tube-based video processing tool with deterministic reordering. Stream mode preserves encoded media for lossless restoration; re-encode mode reduces size with quality loss.
+            {t('about.description')}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="#" className="btn btn-primary btn-lg" rightIcon={<Github className="h-4 w-4" />}>
-              View on GitHub
+              {t('about.github')}
             </a>
             <a href="#" className="btn btn-outline btn-lg" rightIcon={<ExternalLink className="h-4 w-4" />}>
-              Documentation
+              {t('nav.docs')}
             </a>
           </div>
         </div>
@@ -77,9 +79,9 @@ export function AboutPage() {
       {/* Concept */}
       <section>
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Core Concept</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">{t('about.concept')}</h2>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Understanding how tube-based reversible compression works
+            {t('about.conceptDesc')}
           </p>
         </div>
         <div className="space-y-8">
@@ -89,8 +91,8 @@ export function AboutPage() {
                 <algo.icon className="h-8 w-8" />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{algo.title}</h3>
-                <p className="mt-2 text-gray-600 dark:text-gray-300">{algo.description}</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t(`about.${algo.title}`)}</h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-300">{t(`about.${algo.description}`)}</p>
               </div>
             </div>
           ))}
@@ -99,70 +101,70 @@ export function AboutPage() {
 
       {/* Pipeline Visualization */}
       <section className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">Compression Pipeline</h2>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">{t('about.pipeline')}</h2>
         <div className="overflow-x-auto">
           <div className="flex items-center justify-center gap-2 min-w-max px-4">
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-2 dark:bg-blue-900/30">
                 <Film className="h-10 w-10 text-blue-600" />
               </div>
-              <p className="font-medium text-sm">Input Video</p>
+              <p className="font-medium text-sm">{t('about.inputVideo')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-2 dark:bg-green-900/30">
                 <Shuffle className="h-10 w-10 text-green-600" />
               </div>
-              <p className="font-medium text-sm">Extract Audio</p>
+              <p className="font-medium text-sm">{t('about.extractAudio')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-2 dark:bg-purple-900/30">
                 <Film className="h-10 w-10 text-purple-600" />
               </div>
-              <p className="font-medium text-sm">Normalize (CFR + Keyframes)</p>
+              <p className="font-medium text-sm">{t('about.normalize')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-orange-100 flex items-center justify-center mx-auto mb-2 dark:bg-orange-900/30">
                 <Shuffle className="h-10 w-10 text-orange-600" />
               </div>
-              <p className="font-medium text-sm">Segment into Tubes</p>
+              <p className="font-medium text-sm">{t('about.segmentTubes')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-2 dark:bg-red-900/30">
                 <Key className="h-10 w-10 text-red-600" />
               </div>
-              <p className="font-medium text-sm">Shuffle (Fisher-Yates)</p>
+              <p className="font-medium text-sm">{t('about.shuffle')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-2 dark:bg-blue-900/30">
                 <Film className="h-10 w-10 text-blue-600" />
               </div>
-              <p className="font-medium text-sm">Concat Shuffled</p>
+              <p className="font-medium text-sm">{t('about.concatShuffled')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-2 dark:bg-green-900/30">
                 <Zap className="h-10 w-10 text-green-600" />
               </div>
-              <p className="font-medium text-sm">Re-encode (libx264)</p>
+              <p className="font-medium text-sm">{t('about.reencode')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-2 dark:bg-purple-900/30">
                 <Film className="h-10 w-10 text-purple-600" />
               </div>
-              <p className="font-medium text-sm">Mux Audio</p>
+              <p className="font-medium text-sm">{t('about.muxAudio')}</p>
             </div>
             <ArrowRight className="text-gray-400 h-6 w-6" />
             <div className="text-center">
               <div className="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-2 dark:bg-gray-800">
                 <Shield className="h-10 w-10 text-gray-600" />
               </div>
-              <p className="font-medium text-sm">Output + Map + MD5</p>
+              <p className="font-medium text-sm">{t('about.outputMap')}</p>
             </div>
           </div>
         </div>
@@ -171,13 +173,13 @@ export function AboutPage() {
       {/* Tech Stack */}
       <section>
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Technology Stack</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">{t('about.techStack')}</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {techStack.map((tech) => (
             <Card key={tech.category}>
               <CardContent>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{tech.category}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{t(`about.${tech.category.toLowerCase()}`)}</h3>
                 <div className="flex flex-wrap gap-2">
                   {tech.items.map((item) => (
                     <span key={item} className={clsx('badge', tech.color)}>{item}</span>
@@ -192,20 +194,19 @@ export function AboutPage() {
       {/* License */}
       <section className="text-center">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Open Source</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t('about.openSource')}</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Reversible Compression is open source software licensed under the MIT License.
-            You are free to use, modify, and distribute it for any purpose.
+            {t('about.licenseDesc')}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="#" className="btn btn-primary" rightIcon={<Github className="h-4 w-4" />}>
-              GitHub Repository
+              {t('about.github')}
             </a>
             <a href="#" className="btn btn-outline" rightIcon={<ExternalLink className="h-4 w-4" />}>
-              MIT License
+              {t('about.license')}
             </a>
             <a href="#" className="btn btn-outline" rightIcon={<ExternalLink className="h-4 w-4" />}>
-              Contributing Guide
+              {t('about.contributing')}
             </a>
           </div>
         </div>

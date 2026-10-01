@@ -1,6 +1,7 @@
 import { Download, Trash2, Eye, Clock, FileVideo, FileJson, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { formatFileSize, formatDate, formatDuration } from '../../utils/formatters.js'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const STATUS_ICONS = {
   completed: CheckCircle,
@@ -17,6 +18,7 @@ const STATUS_COLORS = {
 }
 
 export function HistoryItem({ job, typeLabel, typeColor, onDownload, onDelete, onView }) {
+  const { t } = useLanguage()
   const StatusIcon = STATUS_ICONS[job.status] || Clock
   const statusColor = STATUS_COLORS[job.status] || 'text-gray-500'
 
@@ -31,7 +33,7 @@ export function HistoryItem({ job, typeLabel, typeColor, onDownload, onDelete, o
           </div>
           <div className="flex items-center gap-2">
             <StatusIcon className={clsx('h-4 w-4', statusColor)} />
-            <span className={clsx('text-sm font-medium capitalize', statusColor)}>{job.status}</span>
+            <span className={clsx('text-sm font-medium capitalize', statusColor)}>{t(`history.status${job.status[0].toUpperCase()}${job.status.slice(1)}`)}</span>
           </div>
         </div>
 
@@ -50,7 +52,7 @@ export function HistoryItem({ job, typeLabel, typeColor, onDownload, onDelete, o
           )}
           {job.ratio && (
             <span className="flex items-center gap-1 text-primary-600 dark:text-primary-400 font-medium">
-              Ratio: {job.ratio.toFixed(2)}x
+              {t('history.ratio')}: {job.ratio.toFixed(2)}x
             </span>
           )}
           {job.durationSec && (
@@ -61,7 +63,7 @@ export function HistoryItem({ job, typeLabel, typeColor, onDownload, onDelete, o
           )}
           {job.tubeCount && (
             <span className="flex items-center gap-1">
-              Tubes: {job.tubeCount}
+              {t('history.tubeCount')}: {job.tubeCount}
             </span>
           )}
         </div>
@@ -71,24 +73,24 @@ export function HistoryItem({ job, typeLabel, typeColor, onDownload, onDelete, o
             <button
               onClick={() => onDownload?.(job.jobId)}
               className="btn btn-sm btn-outline"
-              aria-label="Download result"
+              aria-label={t('history.download')}
             >
               <Download className="h-4 w-4 mr-1" />
-              Download
+              {t('history.download')}
             </button>
           )}
           <button
             onClick={() => onView?.(job.jobId)}
             className="btn btn-sm btn-ghost"
-            aria-label="View details"
+            aria-label={t('history.viewDetails')}
           >
             <Eye className="h-4 w-4 mr-1" />
-            Details
+            {t('history.viewDetails')}
           </button>
           <button
             onClick={() => onDelete?.(job.jobId)}
             className="btn btn-sm btn-ghost text-red-600 hover:text-red-700 dark:text-red-400"
-            aria-label="Delete from history"
+            aria-label={t('history.delete')}
           >
             <Trash2 className="h-4 w-4" />
           </button>

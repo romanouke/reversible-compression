@@ -1,14 +1,15 @@
 import { CheckCircle, AlertCircle, Loader2, Scissors, ArrowUpDown, Film, Mic, CheckCircle2, Info } from 'lucide-react'
 import { clsx } from 'clsx'
 import { ProgressBar } from '../ui/ProgressBar.jsx'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const STAGES = [
-  { key: 'probe', label: 'Validating inputs', icon: Film },
-  { key: 'split', label: 'Splitting compressed video', icon: Scissors },
-  { key: 'restore', label: 'Restoring tube order', icon: ArrowUpDown },
-  { key: 'concat', label: 'Concatenating tubes', icon: Film },
-  { key: 'mux', label: 'Muxing audio', icon: Mic },
-  { key: 'verify', label: 'Verifying integrity', icon: CheckCircle2 },
+  { key: 'probe', label: 'stageProbe', icon: Film },
+  { key: 'split', label: 'stageSplit', icon: Scissors },
+  { key: 'restore', label: 'stageRestore', icon: ArrowUpDown },
+  { key: 'concat', label: 'stageConcat', icon: Film },
+  { key: 'mux', label: 'stageMux', icon: Mic },
+  { key: 'verify', label: 'stageVerify', icon: CheckCircle2 },
 ]
 
 const STAGE_PROGRESS = {
@@ -21,6 +22,7 @@ const STAGE_PROGRESS = {
 }
 
 export function RestoreProgress({ status, stage, progress, onCancel, md5Match, lossless, warnings }) {
+  const { t } = useLanguage()
   const getStageIndex = (stageKey) => STAGES.findIndex((s) => s.key === stageKey)
   const currentStageIndex = stage ? getStageIndex(stage) : 0
 
@@ -36,11 +38,11 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Restoring</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('decompress.restoring')}</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {status === 'processing' ? `Stage: ${STAGES[currentStageIndex]?.label || 'Processing...'}` : 
-             status === 'completed' ? 'Restored successfully' : 
-             status === 'failed' ? 'Restoration failed' : 'Queued'}
+            {status === 'processing' ? t('decompress.stageLabel', { stage: t(`decompress.${STAGES[currentStageIndex]?.label || 'restoring'}`) }) :
+             status === 'completed' ? t('decompress.restored') :
+             status === 'failed' ? t('decompress.restoreFailed') : t('decompress.queued')}
           </p>
         </div>
         {status === 'processing' && (
@@ -48,7 +50,7 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
             onClick={onCancel}
             className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
       </div>
@@ -59,7 +61,7 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
         variant={status === 'failed' ? 'error' : status === 'completed' ? 'success' : 'default'}
       />
 
-      <div className="space-y-3" role="list" aria-label="Restoration stages">
+      <div className="space-y-3" role="list" aria-label={t('decompress.restorationStages')}>
         {STAGES.map((stageInfo, index) => {
           const stageStatus = getStageStatus(index)
           const Icon = stageInfo.icon
@@ -97,12 +99,12 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
                   stageStatus === 'failed' && index === currentStageIndex && 'text-red-700 dark:text-red-300',
                   stageStatus === 'pending' && 'text-gray-500 dark:text-gray-400'
                 )}>
-                  {stageInfo.label}
+                  {t(`decompress.${stageInfo.label}`)}
                 </p>
                 {stageStatus === 'current' && (
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>In progress...</span>
+                    <span>{t('decompress.inProgress')}</span>
                   </div>
                 )}
               </div>
@@ -126,16 +128,16 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
             <>
               <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
               <div>
-                <p className="font-medium text-green-700 dark:text-green-300">Integrity Verified</p>
-                <p className="text-sm text-green-600 dark:text-green-400">Original media content matches (stream-copy restoration)</p>
+                <p className="font-medium text-green-700 dark:text-green-300">{t('decompress.verified')}</p>
+                <p className="text-sm text-green-600 dark:text-green-400">{t('decompress.md5Match')}</p>
               </div>
             </>
           ) : md5Match === false && lossless ? (
             <>
               <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
               <div>
-                <p className="font-medium text-red-700 dark:text-red-300">Integrity Check Failed</p>
-                <p className="text-sm text-red-600 dark:text-red-400">Content hash does not match the original media</p>
+                <p className="font-medium text-red-700 dark:text-red-300">{t('decompress.integrityFailed')}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">{t('decompress.md5Mismatch')}</p>
               </div>
             </>
           ) : (
@@ -143,12 +145,12 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
               <Info className="h-6 w-6 text-amber-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-amber-800 dark:text-amber-200">
-                  {lossless ? 'Integrity could not be verified' : 'Restored from a lossy encode'}
+                  {lossless ? t('decompress.integrityUnknown') : t('decompress.lossyRestoration')}
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
                   {lossless
-                    ? 'The map does not contain a usable content hash.'
-                    : 'The content mismatch is expected; re-encoding prevents an identical restoration.'}
+                    ? t('decompress.hashMissing')
+                    : t('decompress.lossyNote')}
                 </p>
               </div>
             </>
@@ -169,7 +171,7 @@ export function RestoreProgress({ status, stage, progress, onCancel, md5Match, l
       {status === 'failed' && (
         <div className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <p className="text-sm text-red-700 dark:text-red-300">
-            Restoration failed. Please verify your compressed video and tube map are valid.
+            {t('decompress.failedMessage')}
           </p>
         </div>
       )}
